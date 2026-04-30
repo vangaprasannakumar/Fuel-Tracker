@@ -11,10 +11,11 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
+    <!-- ApexCharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <style>
         :root {
-            /* Pure AMOLED Black & Neon Blue */
             --bg-dark: #000000; 
             --surface: #09090b; 
             --border: #1a1a24;
@@ -25,7 +26,7 @@
             --success: #10b981; 
             --danger: #ef4444; 
             --warning: #f59e0b;
-            --mobile-nav-h: 72px;
+            --mobile-nav-h: 80px;
             --ease: cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -58,33 +59,47 @@
         .btn-main:active { transform:translateY(2px) scale(0.98); }
         .btn-main:disabled { opacity:0.6; cursor:not-allowed; }
 
+        .icon-btn { background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:10px; width:36px; height:36px; display:flex; justify-content:center; align-items:center; cursor:pointer; transition:0.2s; }
+        .icon-btn:active { background:var(--border); color:white; }
+
         /* ── NAV & VIEWS ── */
         #mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; width:100%; background:rgba(9,9,11,0.95); backdrop-filter:blur(10px); border-top:1px solid var(--border); padding:10px 10px calc(10px + env(safe-area-inset-bottom)); justify-content:space-around; z-index:1000; }
         body.is-logged-in #mobile-bottom-nav { display:flex; }
         
-        .mob-nav-item { display:flex; flex-direction:column; align-items:center; padding:8px 12px; border-radius:16px; cursor:pointer; color:var(--text-muted); gap:4px; transition:all 0.2s; -webkit-tap-highlight-color:transparent; }
-        .mob-nav-item svg { width:24px; height:24px; }
-        .mob-nav-item span { font-size:11px; font-weight:600; }
+        .mob-nav-item { display:flex; flex-direction:column; align-items:center; padding:8px 12px; border-radius:16px; cursor:pointer; color:var(--text-muted); gap:4px; transition:all 0.2s; -webkit-tap-highlight-color:transparent; flex-shrink:0; }
+        .mob-nav-item svg { width:24px; height:24px; flex-shrink:0; }
+        .mob-nav-item span { font-size:11px; font-weight:600; line-height:1; margin-top:2px; }
         .mob-nav-item.active { color:var(--accent); text-shadow: 0 0 8px rgba(0,238,255,0.4); }
         .mob-nav-item.hidden { display:none !important; }
 
         .app-container { width:100%; max-width:500px; display:none; animation:slideUpFade 0.5s var(--ease); }
         body.is-logged-in .app-container { display: block; }
-        .view-section { padding:24px 20px calc(24px + var(--mobile-nav-h)); display:none; opacity:0; transform:translateX(10px); }
+        /* Increased padding-bottom to ensure nav bar doesn't cover content */
+        .view-section { padding:24px 20px 110px; display:none; opacity:0; transform:translateX(10px); }
         .view-section.active { display:block; opacity:1; transform:translateX(0); animation:slideIn 0.3s var(--ease) forwards; }
 
-        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-        .header h1 { margin:0; font-size:24px; font-weight:700; color:var(--text-main); }
-        .user-badge { font-size:12px; font-weight:600; padding:6px 14px; border-radius:18px; border:1px solid var(--border); background:var(--surface); color:var(--accent); }
+        /* Header Redesign */
+        .header { display:flex; justify-content:space-between; align-items:center; margin-bottom: 24px; padding: 24px 20px 16px; border-bottom: 1px solid var(--border); }
+        .header-left { display:flex; align-items:center; gap:12px; }
+        .header-left img { width:42px; height:42px; border-radius:12px; box-shadow:0 0 10px rgba(0,238,255,0.15); }
+        .header-title-box { display:flex; flex-direction:column; }
+        .header-title-box h1 { margin:0; font-size:22px; color:var(--text-main); line-height:1.2; }
+        .header-title-box span { font-size:11px; color:var(--accent); font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+        
+        .user-badge { font-size:11px; font-weight:600; padding:6px 12px; border-radius:18px; border:1px solid var(--border); background:var(--surface); color:var(--accent); }
 
         /* ── CARDS & MODALS ── */
         .card { background:var(--surface); border:1px solid var(--border); border-left:3px solid var(--accent); padding:16px; border-radius:16px; margin-bottom:12px; position:relative; }
         .card h4 { margin:0 0 4px; font-size:16px; color:var(--text-main); }
         .card p { margin:4px 0; font-size:13px; color:var(--text-muted); }
-        .edit-badge { position:absolute; top:16px; right:16px; font-size:12px; padding:4px 10px; border-radius:8px; border:1px solid var(--border); cursor:pointer; color:var(--text-muted); }
+        .edit-badge { position:absolute; top:16px; right:16px; font-size:12px; padding:4px 10px; border-radius:8px; border:1px solid var(--border); cursor:pointer; color:var(--text-muted); transition:0.2s; }
+        .edit-badge:active { background:var(--border); }
         
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:var(--surface); padding:24px; border-radius:24px; width:90%; max-width:400px; border:1px solid var(--border); }
+        
+        /* Chart container */
+        .chart-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:12px 6px; margin-bottom:16px; }
     </style>
 </head>
 <body>
@@ -92,6 +107,7 @@
 <div id="loader"><div class="spinner"></div><h3 id="loader-msg" style="margin:0; font-weight:500;">Loading...</h3></div>
 <div id="toast"><span id="toast-msg"></span></div>
 
+<!-- LOGIN -->
 <div id="login-container">
     <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo" style="width:90px; height:90px; border-radius:20px; margin-bottom:16px; box-shadow: 0 0 20px rgba(0,238,255,0.2);">
     <h2>Fuel Tracer</h2>
@@ -101,15 +117,24 @@
     <p id="login-msg" style="color:var(--danger);font-size:14px;margin-top:16px;font-weight:500;"></p>
 </div>
 
+<!-- MAIN APP -->
 <div class="app-container" id="main-app">
-    <div class="header" style="padding: 24px 20px 16px;">
-        <h1 id="page-title">Entry</h1>
-        <div style="display:flex; gap:10px; align-items:center;">
+    <div class="header">
+        <div class="header-left">
+            <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo">
+            <div class="header-title-box">
+                <h1>Fuel Tracer</h1>
+                <span id="page-title">Entry</span>
+            </div>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <button onclick="fetchInitData(true)" class="icon-btn" title="Refresh"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
             <span class="user-badge" id="display-user">--</span>
-            <button onclick="logout()" style="background:transparent; border:none; color:var(--text-muted); padding:5px; cursor:pointer;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+            <button onclick="logout()" class="icon-btn" title="Logout"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
         </div>
     </div>
 
+    <!-- 1. ENTRY VIEW -->
     <div id="view-entry" class="view-section active">
         <label style="font-size:14px;color:var(--text-muted);margin-bottom:8px;display:block;">Select Vehicle</label>
         <select id="entry-vehicle" style="margin-bottom:24px;"></select>
@@ -126,35 +151,63 @@
         <div id="entry-amount-container">
             <label style="font-size:14px;color:var(--text-muted);margin-top:16px;margin-bottom:8px;display:block;">Amount Paid (₹)</label>
             <input type="number" id="entry-amount" placeholder="e.g. 500">
-            <p id="live-liters-calc" style="font-size:12px; color:var(--accent); margin-top:8px;">Estimated: 0.00 L (at ₹<span id="display-price">--</span>/L)</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                <p id="live-liters-calc" style="font-size:12px; color:var(--accent); margin:0;">Estimated: 0.00 L (at ₹<span id="display-price">--</span>/L)</p>
+                <button onclick="document.getElementById('price-modal').style.display='flex'" style="background:transparent; border:none; color:var(--text-muted); text-decoration:underline; font-size:12px; cursor:pointer;">Edit Price</button>
+            </div>
         </div>
         <button class="btn-main" id="btn-submit-entry" onclick="submitEntry()" style="margin-top:32px;">Log Entry</button>
     </div>
 
+    <!-- 2. HISTORY VIEW -->
     <div id="view-history" class="view-section">
-        <button class="btn-main" style="margin-top:0; margin-bottom:16px; background:var(--surface); border:1px solid var(--accent); color:var(--accent); box-shadow:none;" onclick="fetchInitData()">🔄 Refresh History</button>
         <div id="history-list"></div>
     </div>
 
+    <!-- 3. DASHBOARD VIEW -->
     <div id="view-dashboard" class="view-section">
         <div class="card" style="border-left-color:var(--success);">
-            <h4 style="color:var(--success);">Mileage Calculator</h4>
-            <p>Calculates km/l between the two most recent "Reserve" hits.</p>
+            <h4 style="color:var(--success);">Latest Mileage</h4>
             <h2 id="dash-mileage" style="margin:10px 0; font-size:32px; color:var(--text-main);">-- km/l</h2>
             <p id="dash-mileage-sub" style="font-size:12px; color:var(--text-muted);">Awaiting data...</p>
         </div>
+        
+        <h4 style="color:var(--text-main); margin:24px 0 12px;">Mileage Trend</h4>
+        <div class="chart-box"><div id="mileage-chart"></div></div>
+
+        <h4 style="color:var(--text-main); margin:24px 0 12px;">Fuel Spend History</h4>
+        <div class="chart-box"><div id="spend-chart"></div></div>
     </div>
 
+    <!-- 4. ADMIN VIEW -->
     <div id="view-admin" class="view-section">
         <div class="card">
-            <h4 style="color:var(--warning);">Global Fuel Price</h4>
-            <p>Update this when pump prices change.</p>
-            <input type="number" id="admin-price" step="0.01" placeholder="Current Price">
-            <button class="btn-main" style="padding:12px; background:var(--warning); color:#000;" onclick="updateFuelPrice()">Update Price</button>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <h4 style="color:var(--warning); margin:0;">App Users</h4>
+                <button class="btn-main" style="width:auto; padding:6px 12px; margin:0;" onclick="openUserModal()">+ Add</button>
+            </div>
+            <p>Manage access and roles.</p>
+            <div id="admin-user-list" style="margin-top:16px;"></div>
         </div>
     </div>
 </div>
 
+<!-- MODALS -->
+
+<!-- Quick Price Modal -->
+<div class="modal" id="price-modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--accent);">Update Fuel Price</h3>
+        <label style="color:var(--text-muted);font-size:13px;">New Price per Liter (₹)</label>
+        <input type="number" id="quick-price" step="0.01">
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-main" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="document.getElementById('price-modal').style.display='none'">Cancel</button>
+            <button class="btn-main" onclick="updateFuelPrice()">Update</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Entry Modal -->
 <div class="modal" id="edit-modal">
     <div class="modal-content">
         <h3 style="margin-top:0; color:var(--accent);">Edit Record</h3>
@@ -166,6 +219,28 @@
         <div style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn-main" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="document.getElementById('edit-modal').style.display='none'">Cancel</button>
             <button class="btn-main" onclick="saveEdit()">Save Edit</button>
+        </div>
+    </div>
+</div>
+
+<!-- User Management Modal -->
+<div class="modal" id="user-modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0; color:var(--warning);" id="user-modal-title">Edit User</h3>
+        <input type="hidden" id="user-row">
+        <label style="color:var(--text-muted);font-size:13px;">Username</label>
+        <input type="text" id="user-name">
+        <label style="color:var(--text-muted);font-size:13px;margin-top:10px;">Role</label>
+        <select id="user-role">
+            <option value="Admin">Admin</option>
+            <option value="User">User</option>
+        </select>
+        <label style="color:var(--text-muted);font-size:13px;margin-top:10px;">Password (Leave blank to keep)</label>
+        <input type="password" id="user-pass">
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn-main" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="document.getElementById('user-modal').style.display='none'">Cancel</button>
+            <button class="btn-main" style="background:var(--danger); display:none;" id="btn-del-user" onclick="deleteUser()">Delete</button>
+            <button class="btn-main" style="background:var(--warning); color:#000;" onclick="saveUser()">Save</button>
         </div>
     </div>
 </div>
@@ -190,12 +265,13 @@
 </nav>
 
 <script>
-    // ⚠️ DEPLOY APPS SCRIPT AND PASTE URL BELOW:
+    // ⚠️ DEPLOY APPS SCRIPT AND PASTE NEW URL BELOW:
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
 
     let currentUser = { username:'', role:'', token:'' };
     let toastQueue = []; let isToastShowing = false;
     let globalFuelPrice = 0; let globalVehicles = []; let globalHistory = [];
+    let mileageChart, spendChart; // ApexCharts instances
 
     function showToast(msg, type='success') { toastQueue.push({msg, type}); processToastQueue(); }
     function processToastQueue() {
@@ -210,13 +286,16 @@
     function showLoader(msg="Loading...") { document.getElementById('loader-msg').innerText=msg; document.getElementById('loader').style.display='flex'; }
     function hideLoader() { document.getElementById('loader').style.display='none'; }
 
-    const PAGE_TITLES = { entry:'Log Entry', history:'Log History', dashboard:'Dashboard', admin:'Admin Settings' };
+    const PAGE_TITLES = { entry:'Entry', history:'History', dashboard:'Dashboard', admin:'Admin' };
     function navTo(tabId) {
         document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));
         document.getElementById('view-'+tabId).classList.add('active');
         document.querySelectorAll('.mob-nav-item').forEach(i=>i.classList.remove('active'));
         document.getElementById('nav-'+tabId).classList.add('active');
         document.getElementById('page-title').innerText = PAGE_TITLES[tabId];
+        
+        if(tabId === 'admin' && currentUser.role === 'Admin') fetchUsers();
+        if(tabId === 'dashboard') setTimeout(renderCharts, 100);
     }
 
     async function callGoogleAPI(payload) {
@@ -249,23 +328,24 @@
             const p = JSON.parse(saved);
             if(Date.now() > p.expires) return logout();
             currentUser = p; document.body.classList.add('is-logged-in');
-            document.getElementById('display-user').innerText = `${p.username} (${p.role})`;
+            document.getElementById('display-user').innerText = `${p.username}`;
             if(p.role !== 'Admin') document.getElementById('nav-admin').classList.add('hidden');
             navTo('entry'); fetchInitData();
             if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
         }
     }
 
-    async function fetchInitData() {
-        showLoader('Syncing...');
+    async function fetchInitData(isRefresh = false) {
+        if(isRefresh) showLoader('Refreshing...');
         const res = await callGoogleAPI({action:'getInitData'});
-        hideLoader();
+        if(isRefresh) hideLoader();
         if(res.status === 'success') {
             globalFuelPrice = res.currentPrice; globalVehicles = res.vehicles; globalHistory = res.history;
             document.getElementById('display-price').innerText = globalFuelPrice.toFixed(2);
-            document.getElementById('admin-price').value = globalFuelPrice.toFixed(2);
+            document.getElementById('quick-price').value = globalFuelPrice.toFixed(2);
             document.getElementById('entry-vehicle').innerHTML = globalVehicles.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
             renderHistory(); calculateMileage();
+            if(document.getElementById('view-dashboard').classList.contains('active')) renderCharts();
         }
     }
 
@@ -332,10 +412,10 @@
     }
 
     async function updateFuelPrice() {
-        const np = document.getElementById('admin-price').value;
+        const np = document.getElementById('quick-price').value;
         if(!np) return; showLoader('Updating...');
         const res = await callGoogleAPI({action:'updatePrice', newPrice:np});
-        hideLoader();
+        hideLoader(); document.getElementById('price-modal').style.display='none';
         if(res.status==='success') { showToast('Price Updated'); fetchInitData(); } else showToast(res.message, 'error');
     }
 
@@ -343,7 +423,8 @@
         const resLogs = globalHistory.filter(h => h.logType === 'RESERVE');
         if(resLogs.length < 2) return document.getElementById('dash-mileage-sub').innerText = "Need at least 2 Reserve logs.";
         const endLog = resLogs[0], startLog = resLogs[1];
-        const dist = endLog.odo - startLog.odo;
+        // FIXED BUG: using .toFixed(1) to avoid 53.60000000000364km glitches
+        const dist = (endLog.odo - startLog.odo).toFixed(1); 
         
         let fuelUsed = 0;
         globalHistory.forEach(h => {
@@ -356,6 +437,105 @@
             document.getElementById('dash-mileage-sub').innerText = `Based on last ${dist}km and ${fuelUsed.toFixed(2)}L`;
             document.getElementById('dash-mileage').style.color = mileage > 35 ? 'var(--success)' : 'var(--warning)';
         } else { document.getElementById('dash-mileage-sub').innerText = "Not enough fuel data between last reserves."; }
+    }
+
+    // ── CHARTS ──
+    function renderCharts() {
+        if(!window.ApexCharts) return;
+
+        // 1. Prepare Mileage Trend Data
+        const reserves = globalHistory.filter(h => h.logType === 'RESERVE').sort((a,b) => a.odo - b.odo);
+        let mileageData = [];
+        for(let i=1; i<reserves.length; i++) {
+            const start = reserves[i-1], end = reserves[i];
+            const dist = end.odo - start.odo;
+            let fuelSum = 0;
+            globalHistory.filter(h => h.logType === 'FUELING' && h.odo > start.odo && h.odo <= end.odo).forEach(f => fuelSum += parseFloat(f.liters));
+            if(fuelSum > 0) { mileageData.push({ x: end.date.substring(0,5), y: parseFloat((dist/fuelSum).toFixed(2)) }); }
+        }
+
+        const commonOptions = {
+            chart: { background: 'transparent', toolbar: { show: false } },
+            theme: { mode: 'dark' },
+            grid: { borderColor: '#1a1a24', strokeDashArray: 4 },
+            dataLabels: { enabled: false },
+            tooltip: { theme: 'dark' }
+        };
+
+        if(mileageChart) mileageChart.destroy();
+        mileageChart = new ApexCharts(document.querySelector("#mileage-chart"), {
+            ...commonOptions,
+            series: [{ name: 'Mileage (km/l)', data: mileageData }],
+            chart: { type: 'area', height: 220, background: 'transparent', toolbar:{show:false} },
+            colors: ['#10b981'],
+            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
+            stroke: { curve: 'smooth', width: 3 },
+            xaxis: { type: 'category' }
+        });
+        mileageChart.render();
+
+        // 2. Prepare Spend Data (Group by Month)
+        let spendMap = {};
+        globalHistory.filter(h => h.logType === 'FUELING').forEach(h => {
+            const parts = h.date.split('-'); // DD-MM-YYYY
+            const month = parts[1] + '/' + parts[2].substring(2);
+            if(!spendMap[month]) spendMap[month] = 0;
+            spendMap[month] += parseFloat(h.amount);
+        });
+        const spendCategories = Object.keys(spendMap).reverse();
+        const spendValues = Object.values(spendMap).reverse();
+
+        if(spendChart) spendChart.destroy();
+        spendChart = new ApexCharts(document.querySelector("#spend-chart"), {
+            ...commonOptions,
+            series: [{ name: 'Spend (₹)', data: spendValues }],
+            chart: { type: 'bar', height: 220, background: 'transparent', toolbar:{show:false} },
+            colors: ['#00eeff'],
+            plotOptions: { bar: { borderRadius: 4, columnWidth: '50%' } },
+            xaxis: { categories: spendCategories }
+        });
+        spendChart.render();
+    }
+
+    // ── ADMIN USER MANAGEMENT ──
+    async function fetchUsers() {
+        document.getElementById('admin-user-list').innerHTML = '<p>Loading users...</p>';
+        const res = await callGoogleAPI({action:'getUsers'});
+        if(res.status === 'success') {
+            let html = '';
+            res.users.forEach(u => {
+                html += `<div class="card"><div class="edit-badge" onclick="openUserModal('${u.rowIdx}', '${u.username}', '${u.role}')">Edit</div>
+                <h4 style="color:var(--text-main); margin-bottom:4px;">${u.username}</h4><p style="margin:0;">${u.role}</p></div>`;
+            });
+            document.getElementById('admin-user-list').innerHTML = html;
+        }
+    }
+
+    function openUserModal(rowIdx='', username='', role='User') {
+        document.getElementById('user-row').value = rowIdx;
+        document.getElementById('user-name').value = username;
+        document.getElementById('user-role').value = role;
+        document.getElementById('user-pass').value = '';
+        document.getElementById('user-modal-title').innerText = rowIdx ? 'Edit User' : 'Add New User';
+        document.getElementById('btn-del-user').style.display = rowIdx ? 'block' : 'none';
+        document.getElementById('user-modal').style.display = 'flex';
+    }
+
+    async function saveUser() {
+        const r = document.getElementById('user-row').value, u = document.getElementById('user-name').value, rl = document.getElementById('user-role').value, p = document.getElementById('user-pass').value;
+        if(!u) return showToast('Username required', 'error');
+        showLoader('Saving...');
+        const res = await callGoogleAPI({action:'saveUser', rowIdx:r, username:u, role:rl, password:p});
+        hideLoader(); document.getElementById('user-modal').style.display='none';
+        if(res.status==='success') { showToast('User Saved'); fetchUsers(); } else showToast(res.message, 'error');
+    }
+
+    async function deleteUser() {
+        if(!confirm('Delete this user?')) return;
+        showLoader('Deleting...');
+        const res = await callGoogleAPI({action:'deleteUser', rowIdx:document.getElementById('user-row').value});
+        hideLoader(); document.getElementById('user-modal').style.display='none';
+        if(res.status==='success') { showToast('User Deleted'); fetchUsers(); } else showToast(res.message, 'error');
     }
 
     startApp();
