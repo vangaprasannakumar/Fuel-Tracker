@@ -31,7 +31,31 @@
 
         * { box-sizing: border-box; }
         
-        body { font-family: 'Outfit', sans-serif; color: var(--text-main); margin: 0; background: var(--bg-dark); min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; overflow-x: hidden; width: 100vw; touch-action: manipulation; }
+        /* ── INTERNAL SCROLLING FIX ── */
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            color: var(--text-main); 
+            margin: 0; 
+            background: var(--bg-dark); 
+            height: 100dvh; /* Locks body to viewport height */
+            width: 100vw; 
+            overflow: hidden; /* Prevents body scroll to stop address bar jumps */
+            display: flex; 
+            justify-content: center; 
+            touch-action: manipulation; 
+        }
+        
+        .app-container { 
+            width: 100%; 
+            max-width: 500px; 
+            height: 100%; 
+            overflow-y: auto; /* Internal scrolling container */
+            display: none; 
+            position: relative;
+            scroll-behavior: smooth;
+            animation: slideUpFade 0.5s var(--ease); 
+        }
+        body.is-logged-in .app-container { display: block; }
         
         @keyframes slideUpFade { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         @keyframes slideIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
@@ -46,7 +70,7 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         /* ── LOGIN ── */
-        #login-container { display:block; width:100%; max-width:400px; text-align:center; background:var(--surface); border:1px solid var(--border); padding:44px 32px; border-radius:28px; margin-top:10vh; box-shadow:0 24px 60px rgba(0,238,255,0.05); animation:slideUpFade 0.5s var(--ease); }
+        #login-container { display:flex; flex-direction:column; align-items:center; width:100%; max-width:400px; text-align:center; background:var(--surface); border:1px solid var(--border); padding:44px 32px; border-radius:28px; margin-top:10vh; height:fit-content; box-shadow:0 24px 60px rgba(0,238,255,0.05); animation:slideUpFade 0.5s var(--ease); }
         body.is-logged-in #login-container { display:none !important; }
         #login-container h2 { margin:0 0 24px; font-weight:700; font-size:28px; color:var(--accent); text-shadow: 0 0 10px rgba(0,238,255,0.3); }
 
@@ -61,8 +85,7 @@
         .icon-btn { background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:10px; width:40px; height:40px; display:flex; justify-content:center; align-items:center; cursor:pointer; transition:0.2s; }
         .icon-btn:active { background:var(--border); color:white; }
 
-        /* ── NAV & VIEWS ── */
-        /* ── FLOATING NAV ── */
+        /* ── CAPCO STYLE FLOATING NAV ── */
         #mobile-bottom-nav { 
             display:none; 
             position:fixed; 
@@ -102,17 +125,9 @@
         .mob-nav-item span { font-size:11px; font-weight:600; line-height:1; margin-top:4px; flex-shrink:0; }
         .mob-nav-item.active { background:rgba(0, 238, 255, 0.1); color:var(--accent); text-shadow: 0 0 8px rgba(0,238,255,0.4); }
         .mob-nav-item.hidden { display:none !important; }
-        
-        .mob-nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 12px; border-radius:16px; cursor:pointer; color:var(--text-muted); gap:4px; transition:all 0.2s; -webkit-tap-highlight-color:transparent; flex-shrink:0; min-height:56px; }
-        .mob-nav-item svg { width:24px; height:24px; flex-shrink:0; }
-        .mob-nav-item span { font-size:11px; font-weight:600; line-height:1; margin-top:4px; flex-shrink:0; }
-        .mob-nav-item.active { color:var(--accent); text-shadow: 0 0 8px rgba(0,238,255,0.4); }
-        .mob-nav-item.hidden { display:none !important; }
 
-        .app-container { width:100%; max-width:500px; display:none; animation:slideUpFade 0.5s var(--ease); }
-        body.is-logged-in .app-container { display: block; }
-        
-        .view-section { padding:16px 20px calc(24px + var(--mobile-nav-h) + env(safe-area-inset-bottom)); display:none; opacity:0; transform:translateX(10px); }
+        /* ── VIEWS ── */
+        .view-section { padding:16px 20px calc(110px + env(safe-area-inset-bottom)); display:none; opacity:0; transform:translateX(10px); }
         .view-section.active { display:block; opacity:1; transform:translateX(0); animation:slideIn 0.3s var(--ease) forwards; }
 
         /* Header Redesign */
@@ -136,6 +151,16 @@
         .modal-content { background:var(--surface); padding:24px; border-radius:24px; width:90%; max-width:400px; border:1px solid var(--border); }
         
         .chart-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px 8px; margin-bottom:16px; }
+
+        /* ── SCROLL TO TOP BUTTON ── */
+        #scrollToTopBtn {
+            display: none; position: fixed; bottom: 95px; right: 20px; z-index: 998;
+            background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
+            border-radius: 50%; width: 44px; height: 44px; cursor: pointer;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.5); align-items: center; justify-content: center;
+            padding: 0; transition: 0.2s;
+        }
+        #scrollToTopBtn:active { transform: scale(0.9); background: var(--accent); color: #000; }
     </style>
 </head>
 <body>
@@ -307,6 +332,10 @@
     </div>
 </nav>
 
+<button id="scrollToTopBtn" onclick="scrollToTop()" title="Go to top">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
 <script>
     // ⚠️ DEPLOY APPS SCRIPT AND PASTE NEW URL BELOW:
     const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
@@ -336,8 +365,22 @@
         document.querySelectorAll('.mob-nav-item').forEach(i=>i.classList.remove('active'));
         document.getElementById('nav-'+tabId).classList.add('active');
         
+        // Scroll to top automatically when changing tabs
+        scrollToTop();
+        
         if(tabId === 'admin' && currentUser.role === 'Admin') fetchUsers();
         if(tabId === 'dashboard') setTimeout(renderCharts, 100);
+    }
+
+    // SCROLL TO TOP LOGIC (Attached to main-app container)
+    const appContainer = document.getElementById('main-app');
+    appContainer.addEventListener('scroll', function() {
+        const btn = document.getElementById('scrollToTopBtn');
+        if (this.scrollTop > 200) btn.style.display = 'flex';
+        else btn.style.display = 'none';
+    });
+    function scrollToTop() {
+        appContainer.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function callGoogleAPI(payload) {
@@ -485,7 +528,7 @@
         } else { document.getElementById('dash-mileage-sub').innerText = "Not enough fuel data between last reserves."; }
     }
 
-    // ─── NEW: MAINTENANCE TRACKER ───
+    // ── MAINTENANCE TRACKER ──
     function calculateMaintenance() {
         if (globalHistory.length === 0) return;
         const currentOdo = Math.max(...globalHistory.map(h => parseFloat(h.odo) || 0));
@@ -549,7 +592,6 @@
             tooltip: { theme: 'dark' }
         };
 
-        // 1. Mileage Area Chart
         const reserves = globalHistory.filter(h => h.logType === 'RESERVE').sort((a,b) => a.odo - b.odo);
         let mileageData = [];
         for(let i=1; i<reserves.length; i++) {
@@ -573,7 +615,6 @@
         });
         mileageChart.render();
 
-        // 2. Spend Bar Chart
         let spendMap = {};
         globalHistory.filter(h => h.logType === 'FUELING').forEach(h => {
             const parts = h.date.split('-'); 
@@ -596,7 +637,6 @@
         });
         spendChart.render();
 
-        // 3. User Spend Donut Chart
         let userSpendMap = {};
         globalHistory.filter(h => h.logType === 'FUELING').forEach(h => {
             if(!userSpendMap[h.loggedBy]) userSpendMap[h.loggedBy] = 0;
