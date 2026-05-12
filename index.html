@@ -11,7 +11,6 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
-    <!-- ApexCharts CDN -->
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     
     <style>
@@ -66,7 +65,6 @@
         #mobile-bottom-nav { display:none; position:fixed; bottom:0; left:0; width:100%; background:rgba(9,9,11,0.95); backdrop-filter:blur(10px); border-top:1px solid var(--border); padding:10px 10px calc(10px + env(safe-area-inset-bottom)); justify-content:space-around; z-index:1000; }
         body.is-logged-in #mobile-bottom-nav { display:flex; }
         
-        /* Nav Bar Flex-Shrink Fix */
         .mob-nav-item { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 12px; border-radius:16px; cursor:pointer; color:var(--text-muted); gap:4px; transition:all 0.2s; -webkit-tap-highlight-color:transparent; flex-shrink:0; min-height:56px; }
         .mob-nav-item svg { width:24px; height:24px; flex-shrink:0; }
         .mob-nav-item span { font-size:11px; font-weight:600; line-height:1; margin-top:4px; flex-shrink:0; }
@@ -76,7 +74,6 @@
         .app-container { width:100%; max-width:500px; display:none; animation:slideUpFade 0.5s var(--ease); }
         body.is-logged-in .app-container { display: block; }
         
-        /* Adjusted Padding to ensure nav bar clears content */
         .view-section { padding:16px 20px calc(24px + var(--mobile-nav-h) + env(safe-area-inset-bottom)); display:none; opacity:0; transform:translateX(10px); }
         .view-section.active { display:block; opacity:1; transform:translateX(0); animation:slideIn 0.3s var(--ease) forwards; }
 
@@ -100,7 +97,6 @@
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:var(--surface); padding:24px; border-radius:24px; width:90%; max-width:400px; border:1px solid var(--border); }
         
-        /* Chart container */
         .chart-box { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:16px 8px; margin-bottom:16px; }
     </style>
 </head>
@@ -109,7 +105,6 @@
 <div id="loader"><div class="spinner"></div><h3 id="loader-msg" style="margin:0; font-weight:500;">Loading...</h3></div>
 <div id="toast"><span id="toast-msg"></span></div>
 
-<!-- LOGIN -->
 <div id="login-container">
     <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo" style="width:100px; height:100px; border-radius:24px; margin-bottom:16px; box-shadow: 0 0 20px rgba(0,238,255,0.2);">
     <h2>Fuel Tracker</h2>
@@ -119,9 +114,7 @@
     <p id="login-msg" style="color:var(--danger);font-size:14px;margin-top:16px;font-weight:500;"></p>
 </div>
 
-<!-- MAIN APP -->
 <div class="app-container" id="main-app">
-    <!-- Sticky Header -->
     <div class="header">
         <div class="header-left">
             <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo">
@@ -136,7 +129,6 @@
         </div>
     </div>
 
-    <!-- 1. ENTRY VIEW -->
     <div id="view-entry" class="view-section active">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
             <h2 style="margin:0; font-size:24px;">Log Entry</h2>
@@ -164,7 +156,6 @@
         <button class="btn-main" id="btn-submit-entry" onclick="submitEntry()" style="margin-top:32px;">Log Entry</button>
     </div>
 
-    <!-- 2. HISTORY VIEW -->
     <div id="view-history" class="view-section">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
             <h2 style="margin:0; font-size:24px;">Log History</h2>
@@ -172,7 +163,6 @@
         <div id="history-list"></div>
     </div>
 
-    <!-- 3. DASHBOARD VIEW -->
     <div id="view-dashboard" class="view-section">
         <h2 style="margin:0 0 16px; font-size:24px;">Dashboard</h2>
         
@@ -181,6 +171,11 @@
             <p>Calculates km/l between the two most recent "Reserve" hits.</p>
             <h2 id="dash-mileage" style="margin:10px 0; font-size:36px; color:var(--text-main);">-- km/l</h2>
             <p id="dash-mileage-sub" style="font-size:12px; color:var(--text-muted);">Awaiting data...</p>
+        </div>
+
+        <h4 style="color:var(--text-main); margin:24px 0 12px;">Maintenance Status</h4>
+        <div class="card" id="maintenance-card" style="border-left-color:var(--text-muted); padding:16px 12px;">
+            <p style="text-align:center; color:var(--text-muted);">Loading maintenance data...</p>
         </div>
         
         <h4 style="color:var(--text-main); margin:24px 0 12px;">Mileage Trend</h4>
@@ -193,7 +188,6 @@
         <div class="chart-box"><div id="user-chart"></div></div>
     </div>
 
-    <!-- 4. ADMIN VIEW -->
     <div id="view-admin" class="view-section">
         <h2 style="margin:0 0 16px; font-size:24px;">Admin Settings</h2>
         
@@ -208,9 +202,6 @@
     </div>
 </div>
 
-<!-- MODALS -->
-
-<!-- Quick Price Modal (Universal) -->
 <div class="modal" id="price-modal">
     <div class="modal-content">
         <h3 style="margin-top:0; color:var(--accent);">Update Fuel Price</h3>
@@ -223,7 +214,6 @@
     </div>
 </div>
 
-<!-- Edit Entry Modal -->
 <div class="modal" id="edit-modal">
     <div class="modal-content">
         <h3 style="margin-top:0; color:var(--accent);">Edit Record</h3>
@@ -239,7 +229,6 @@
     </div>
 </div>
 
-<!-- User Management Modal (Admin Only) -->
 <div class="modal" id="user-modal">
     <div class="modal-content">
         <h3 style="margin-top:0; color:var(--warning);" id="user-modal-title">Edit User</h3>
@@ -286,7 +275,8 @@
 
     let currentUser = { username:'', role:'', token:'' };
     let toastQueue = []; let isToastShowing = false;
-    let globalFuelPrice = 0; let globalVehicles = []; let globalHistory = [];
+    let globalFuelPrice = 0, globalLastLube = 0, globalLastOil = 0; 
+    let globalVehicles = [], globalHistory = [];
     let mileageChart, spendChart, userChart; 
 
     function showToast(msg, type='success') { toastQueue.push({msg, type}); processToastQueue(); }
@@ -354,10 +344,11 @@
         const res = await callGoogleAPI({action:'getInitData'});
         if(isRefresh) hideLoader();
         if(res.status === 'success') {
-            globalFuelPrice = res.currentPrice; globalVehicles = res.vehicles; globalHistory = res.history;
+            globalFuelPrice = res.currentPrice; globalLastLube = res.lastLubeOdo; globalLastOil = res.lastOilOdo;
+            globalVehicles = res.vehicles; globalHistory = res.history;
             document.getElementById('display-price').innerText = globalFuelPrice.toFixed(2);
             document.getElementById('entry-vehicle').innerHTML = globalVehicles.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
-            renderHistory(); calculateMileage();
+            renderHistory(); calculateMileage(); calculateMaintenance();
             if(document.getElementById('view-dashboard').classList.contains('active')) renderCharts();
         }
     }
@@ -454,6 +445,59 @@
             document.getElementById('dash-mileage-sub').innerText = `Based on last ${dist}km and ${fuelUsed.toFixed(2)}L`;
             document.getElementById('dash-mileage').style.color = mileage > 40 ? 'var(--success)' : 'var(--warning)';
         } else { document.getElementById('dash-mileage-sub').innerText = "Not enough fuel data between last reserves."; }
+    }
+
+    // ─── NEW: MAINTENANCE TRACKER ───
+    function calculateMaintenance() {
+        if (globalHistory.length === 0) return;
+        const currentOdo = Math.max(...globalHistory.map(h => parseFloat(h.odo) || 0));
+        
+        const lubeDiff = currentOdo - globalLastLube;
+        const oilDiff = currentOdo - globalLastOil;
+
+        const lubePct = Math.min(100, (lubeDiff / 500) * 100);
+        const oilPct = Math.min(100, (oilDiff / 3000) * 100);
+
+        const lubeColor = lubePct >= 100 ? 'var(--danger)' : (lubePct >= 80 ? 'var(--warning)' : 'var(--success)');
+        const oilColor = oilPct >= 100 ? 'var(--danger)' : (oilPct >= 80 ? 'var(--warning)' : 'var(--success)');
+
+        document.getElementById('maintenance-card').innerHTML = `
+            <div style="margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+                    <div>
+                        <p style="margin:0 0 2px; font-size:12px; color:var(--text-muted); font-weight:600;">⛓️ Chain Lube (Every 500 km)</p>
+                        <h4 style="margin:0; font-size:18px; color:${lubeColor};">${lubeDiff.toFixed(0)} <span style="font-size:12px; font-weight:400;">km since last</span></h4>
+                    </div>
+                    <button class="btn-main" style="width:auto; padding:6px 12px; margin:0; font-size:12px; background:transparent; border:1px solid var(--border); color:var(--text-main); box-shadow:none;" onclick="markServiceDone('LUBE', ${currentOdo})">Mark Done</button>
+                </div>
+                <div style="width:100%; background:var(--bg-dark); height:6px; border-radius:3px; overflow:hidden;">
+                    <div style="width:${lubePct}%; background:${lubeColor}; height:100%; border-radius:3px; transition:0.3s;"></div>
+                </div>
+            </div>
+
+            <div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
+                    <div>
+                        <p style="margin:0 0 2px; font-size:12px; color:var(--text-muted); font-weight:600;">🛢️ Engine Oil (Every 3,000 km)</p>
+                        <h4 style="margin:0; font-size:18px; color:${oilColor};">${oilDiff.toFixed(0)} <span style="font-size:12px; font-weight:400;">km since last</span></h4>
+                    </div>
+                    <button class="btn-main" style="width:auto; padding:6px 12px; margin:0; font-size:12px; background:transparent; border:1px solid var(--border); color:var(--text-main); box-shadow:none;" onclick="markServiceDone('OIL', ${currentOdo})">Mark Done</button>
+                </div>
+                <div style="width:100%; background:var(--bg-dark); height:6px; border-radius:3px; overflow:hidden;">
+                    <div style="width:${oilPct}%; background:${oilColor}; height:100%; border-radius:3px; transition:0.3s;"></div>
+                </div>
+            </div>
+        `;
+    }
+
+    async function markServiceDone(type, currentOdo) {
+        const name = type === 'LUBE' ? 'Chain Lube' : 'Engine Oil';
+        if(!confirm(`Are you sure you want to mark ${name} as done at ${currentOdo} km?`)) return;
+        showLoader('Updating Service...');
+        const res = await callGoogleAPI({action:'updateService', serviceType: type, odoVal: currentOdo});
+        hideLoader();
+        if(res.status === 'success') { showToast(res.message); fetchInitData(); }
+        else showToast(res.message, 'error');
     }
 
     // ── CHARTS ──
