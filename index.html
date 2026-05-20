@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Fuel Tracker</title>
     <meta name="theme-color" content="#000000">
+    <meta name="app-version" content="20260520">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -44,10 +45,9 @@
             touch-action: manipulation; 
         }
         
-        /* MODERN DESKTOP & LANDSCAPE EXPANSIVE SCALE OVERHAUL */
         .app-container { 
             width: 100%; 
-            max-width: 1100px; /* Expands interface for landscape utilization layout views */
+            max-width: 1100px; /* Widescreen landscape view layout optimization */
             height: 100%; 
             overflow-y: auto; 
             display: none; 
@@ -59,14 +59,15 @@
         
         @keyframes slideUpFade { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         @keyframes slideIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         #toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px); background:rgba(16,185,129,0.95); backdrop-filter:blur(12px); color:white; padding:14px 28px; border-radius:28px; box-shadow:0 8px 28px rgba(16,185,129,0.35); z-index:100000; transition:all 0.3s var(--ease); font-weight:600; font-size:14px; opacity:0; pointer-events:none; }
         #toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
         #toast.toast-error { background:rgba(239,68,68,0.95); box-shadow:0 8px 28px rgba(239,68,68,0.35); }
         
-        #loader { position:fixed; inset:0; display:none; flex-direction:column; justify-content:center; align-items:center; z-index:99999; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); color:var(--text-main); }
-        .spinner { width:40px; height:40px; border:4px solid rgba(0,238,255,0.2); border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; margin-bottom:15px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* HIGH-TECH GLASS OVERLAY LOAD ENGINE STYLING */
+        #global-loader { position:fixed; inset:0; z-index:99999; background:rgba(9,9,11,0.92); backdrop-filter:blur(16px); display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
+        .spinner-ring { width:50px; height:50px; border:3px solid rgba(0,238,255,0.15); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
 
         #login-container { display:flex; flex-direction:column; align-items:center; width:100%; max-width:400px; text-align:center; background:var(--surface); border:1px solid var(--border); padding:44px 32px; border-radius:28px; margin-top:10vh; height:fit-content; box-shadow:0 24px 60px rgba(0,238,255,0.05); animation:slideUpFade 0.5s var(--ease); }
         body.is-logged-in #login-container { display:none !important; }
@@ -83,21 +84,7 @@
         .icon-btn:active { background:var(--border); color:white; }
 
         #mobile-bottom-nav { 
-            display:none; 
-            position:fixed; 
-            bottom:16px; 
-            left:50%; 
-            transform:translateX(-50%); 
-            width:92%; 
-            max-width:400px; 
-            background:rgba(9,9,11,0.95); 
-            backdrop-filter:blur(16px); 
-            border:1px solid rgba(128,128,128,0.2); 
-            border-radius:26px; 
-            padding:8px 8px calc(8px + env(safe-area-inset-bottom)); 
-            justify-content:space-around; 
-            z-index:1000; 
-            box-shadow:0 10px 40px rgba(0,0,0,0.7); 
+            display:none; position:fixed; bottom:16px; left:50%; transform:translateX(-50%); width:92%; max-width:400px; background:rgba(9,9,11,0.95); backdrop-filter:blur(16px); border:1px solid rgba(128,128,128,0.2); border-radius:26px; padding:8px 8px calc(8px + env(safe-area-inset-bottom)); justify-content:space-around; z-index:1000; box-shadow:0 10px 40px rgba(0,0,0,0.7); 
         }
         body.is-logged-in #mobile-bottom-nav { display:flex; }
         
@@ -121,21 +108,10 @@
         .header-right { display:flex; align-items:center; gap:10px; }
         .user-badge { font-size:11px; font-weight:600; padding:6px 12px; border-radius:18px; border:1px solid var(--border); background:var(--surface); color:var(--accent); }
 
-        /* ADVANCED GLASSMORPHISM CARD ARRAYS */
         .card { 
-            background: rgba(9,9,11,0.6); 
-            backdrop-filter: blur(14px); 
-            border: 1px solid rgba(255,255,255,0.03); 
-            border-left: 3px solid var(--accent); 
-            padding: 16px; border-radius: 16px; margin-bottom: 12px; position: relative; 
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            transition: all 0.25s var(--ease);
+            background:rgba(9,9,11,0.6); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,0.03); border-left:3px solid var(--accent); padding:16px; border-radius:16px; margin-bottom:12px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.4); transition:all 0.25s var(--ease); 
         }
-        .card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(0, 238, 255, 0.15);
-            box-shadow: 0 12px 40px rgba(0, 238, 255, 0.04);
-        }
+        .card:hover { transform:translateY(-2px); border-color:rgba(0,238,255,0.15); box-shadow:0 12px 40px rgba(0,238,255,0.04); }
         .card h4 { margin:0 0 4px; font-size:16px; color:var(--text-main); }
         .card p { margin:4px 0; font-size:13px; color:var(--text-muted); }
         .edit-badge { position:absolute; top:16px; right:16px; font-size:12px; padding:6px 12px; border-radius:8px; border:1px solid var(--border); cursor:pointer; color:var(--text-muted); transition:0.2s; font-weight:600; }
@@ -143,10 +119,9 @@
         
         .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:10000; justify-content:center; align-items:center; }
         .modal-content { background:var(--surface); padding:24px; border-radius:24px; width:90%; max-width:400px; border:1px solid var(--border); }
-        
-        .chart-box { background:rgba(9,9,11,0.4); backdrop-filter: blur(10px); border: 1px solid var(--border); border-radius: 16px; padding: 16px 8px; margin-bottom: 16px; }
+        .chart-box { background:rgba(9,9,11,0.4); backdrop-filter:blur(10px); border:1px solid var(--border); border-radius:16px; padding:16px 8px; margin-bottom:16px; }
 
-        /* ADVANCED RESPONSIVE GRID LAYOUT CONTROLLERS */
+        /* ADVANCED COLUMN GRID ARCHITECTURE */
         .stats-summary-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
         .charts-flex-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
         .maintenance-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
@@ -163,19 +138,18 @@
         }
 
         #scrollToTopBtn {
-            display: none; position: fixed; bottom: 95px; right: 20px; z-index: 998;
-            background: var(--surface); color: var(--text-muted); border: 1px solid var(--border);
-            border-radius: 50%; width: 44px; height: 44px; cursor: pointer;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.5); align-items: center; justify-content: center;
-            padding: 0; transition: 0.2s;
+            display: none; position: fixed; bottom: 95px; right: 20px; z-index: 998; background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 0; transition: 0.2s;
         }
         #scrollToTopBtn:active { transform: scale(0.9); background: var(--accent); color: #000; }
     </style>
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><h3 id="loader-msg" style="margin:0; font-weight:500;">Loading...</h3></div>
-<div id="toast"><span id="toast-msg"></span></div>
+<div id="global-loader">
+    <div class="spinner-ring"></div>
+    <div id="gl-msg" style="font-size:16px; font-weight:600; color:var(--text-main); text-align:center;">Processing Telemetry...</div>
+    <div id="gl-sub" style="font-size:13px; color:var(--text-muted);">Please stand by</div>
+</div>
 
 <div id="login-container">
     <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo" style="width:100px; height:100px; border-radius:24px; margin-bottom:16px; box-shadow: 0 0 20px rgba(0,238,255,0.2);">
@@ -230,7 +204,7 @@
             <div style="padding-top:40px;">
                 <div class="card" style="border-left-color: var(--accent);">
                     <h4>Pump Side Assist</h4>
-                    <p>Entries are protected against odometer typos and regression faults. If you are offline, records queue safely in background storage arrays.</p>
+                    <p>Entries validate against odometer drops before saving. Offline logs stage securely in an itemized local queue configuration.</p>
                 </div>
             </div>
         </div>
@@ -248,20 +222,20 @@
         
         <div class="stats-summary-strip">
             <div class="card" style="border-left-color: var(--accent); margin-bottom: 0;">
-                <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0;">Total Expense</p>
-                <h3 id="stat-total-spent" style="margin: 6px 0 0; font-size: 20px; color: var(--text-main);">₹0</h3>
+                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Total Spend</p>
+                <h3 id="stat-total-spent" style="margin:6px 0 0; font-size:20px;">₹0</h3>
             </div>
             <div class="card" style="border-left-color: var(--success); margin-bottom: 0;">
-                <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0;">Total Liters</p>
-                <h3 id="stat-total-liters" style="margin: 6px 0 0; font-size: 20px; color: var(--text-main);">0.00 L</h3>
+                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Total Fuel</p>
+                <h3 id="stat-total-liters" style="margin:6px 0 0; font-size:20px;">0.00 L</h3>
             </div>
             <div class="card" style="border-left-color: var(--warning); margin-bottom: 0;">
-                <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0;">Vehicle Dataset Logs</p>
-                <h3 id="stat-total-logs" style="margin: 6px 0 0; font-size: 20px; color: var(--text-main);">0</h3>
+                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Total Logs</p>
+                <h3 id="stat-total-logs" style="margin:6px 0 0; font-size:20px;">0</h3>
             </div>
             <div class="card" style="border-left-color: #a855f7; margin-bottom: 0;">
-                <p style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin: 0;">Global Pump Rate</p>
-                <h3 id="stat-avg-price" style="margin: 6px 0 0; font-size: 20px; color: var(--text-main);">₹0.00</h3>
+                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Base Price</p>
+                <h3 id="stat-avg-price" style="margin:6px 0 0; font-size:20px;">₹0.00</h3>
             </div>
         </div>
 
@@ -275,7 +249,7 @@
         <h4 style="color:var(--text-main); margin:24px 0 12px;">Isolated Maintenance Lifecycles</h4>
         <div class="card" style="border-left-color:var(--text-muted); padding:16px 12px;">
             <div id="maintenance-card">
-                <p style="text-align:center; color:var(--text-muted);">Awaiting vehicle selection...</p>
+                <p style="text-align:center; color:var(--text-muted);">Awaiting vehicle dataset match...</p>
             </div>
         </div>
         
@@ -309,7 +283,7 @@
             <div>
                 <div class="card" style="border-left-color: var(--danger);">
                     <h4>Audit Trail Ledger</h4>
-                    <p>All user profiles modifications, adjustments, fuel price logs, and database row overrides generate immutable records directly into the Audit Sheet database backend.</p>
+                    <p>All profile updates, target price logs, and database overrides record directly into the Audit Sheet backend.</p>
                 </div>
             </div>
         </div>
@@ -407,8 +381,21 @@
         t.classList.add('show');
         setTimeout(() => { t.classList.remove('show'); setTimeout(()=>{isToastShowing=false; processToastQueue();}, 400); }, 3000);
     }
-    function showLoader(msg="Loading...") { document.getElementById('loader-msg').innerText=msg; document.getElementById('loader').style.display='flex'; }
-    function hideLoader() { document.getElementById('loader').style.display='none'; }
+    
+    // EXPLICIT STEP-BY-STEP OVERLAY MESSAGE ROUTINES
+    const GL_CONFIGS = {
+        refresh: { msg: 'Refreshing System Grid…', sub: 'Fetching records from spreadsheet service' },
+        logging: { msg: 'Logging Transaction…',    sub: 'Acquiring atomic operational locks' },
+        excel:   { msg: 'Compiling Analytics…',    sub: 'Rendering tracking dashboards' },
+        default: { msg: 'Please wait…',             sub: 'Processing request configuration' }
+    };
+    function showLoader(type = 'default') { 
+        const cfg = GL_CONFIGS[type] || GL_CONFIGS.default;
+        document.getElementById('gl-msg').innerText = cfg.msg;
+        document.getElementById('gl-sub').innerText = cfg.sub;
+        document.getElementById('global-loader').style.display = 'flex'; 
+    }
+    function hideLoader() { document.getElementById('global-loader').style.display = 'none'; }
 
     function navTo(tabId) {
         document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));
@@ -426,11 +413,9 @@
         if (this.scrollTop > 200) btn.style.display = 'flex';
         else btn.style.display = 'none';
     });
-    function scrollToTop() {
-        appContainer.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    function scrollToTop() { appContainer.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-    // INTELLIGENT OFFLINE LOCAL STORAGE INTERCEPTOR & QUEUE MANAGER
+    // DYNAMIC TRANSMISSION INTERCEPTOR (With Sliding-Window Lifespans)
     async function callGoogleAPI(payload) {
         if (payload.action !== 'login' && currentUser.token) { 
             payload._token = currentUser.token; 
@@ -440,13 +425,12 @@
             const res = await fetch(GOOGLE_API_URL, { method:'POST', body:JSON.stringify(payload) });
             const data = await res.json();
             if(data.status==='error' && data.message.includes('expired')) { 
-                showToast('Session expired.', 'error'); 
-                logout(); 
-            } else if (currentUser.token) {
+                showToast('Session expired.', 'error'); logout(); 
+            } else if (currentUser.token && data.status !== 'error') {
                 const saved = localStorage.getItem('ft_user');
                 if (saved) {
                     const p = JSON.parse(saved);
-                    p.expires = Date.now() + (5.5 * 3600000); // Sliding token renewal sync window
+                    p.expires = Date.now() + (5.5 * 3600000); // Push sliding window lifespan 5.5 hours forward
                     localStorage.setItem('ft_user', JSON.stringify(p));
                 }
             }
@@ -456,38 +440,58 @@
                 let queue = JSON.parse(localStorage.getItem('offline_fuel_queue')) || [];
                 queue.push({ payload, timestamp: Date.now() });
                 localStorage.setItem('offline_fuel_queue', JSON.stringify(queue));
-                showToast('Network offline. Staged log to local queue for auto background sync.', 'error');
+                showToast('Network offline. Record staged locally for background sync loop.', 'error');
                 return { status: 'offline_staged' };
             }
-            return {status:'error', message:'Network communication link offline.'}; 
+            return {status:'error', message:'Network connectivity link is down.'}; 
         }
     }
 
+    // FINE-GRAINED INDIVIDUAL QUEUE SYNCHRONIZATION 
     async function syncOfflineQueue() {
         let queue = JSON.parse(localStorage.getItem('offline_fuel_queue')) || [];
         if (queue.length === 0) return;
-        showLoader(`Syncing ${queue.length} staged entries...`);
-        let successCount = 0;
-        for(let item of queue) {
+        
+        showLoader('refresh');
+        let successfullyProcessedIds = [];
+        
+        for(let i = 0; i < queue.length; i++) {
+            const item = queue[i];
             try {
                 const res = await fetch(GOOGLE_API_URL, { method:'POST', body:JSON.stringify(item.payload) });
                 const data = await res.json();
-                if (data.status === 'success') successCount++;
-            } catch(err) { break; }
+                if (data.status === 'success') {
+                    successfullyProcessedIds.push(item.timestamp);
+                }
+            } catch(err) {
+                console.warn('Sync loop interrupted by connection dropout.', err);
+                break; // Stop sync attempts for remaining items to protect data
+            }
         }
-        if (successCount > 0) {
-            queue.splice(0, successCount);
-            localStorage.setItem('offline_fuel_queue', JSON.stringify(queue));
-            showToast(`Synchronized ${successCount} background logs successfully!`);
-            fetchInitData();
+        
+        // Remove only verified processed entries from the array
+        let remainingQueue = queue.filter(item => !successfullyProcessedIds.includes(item.timestamp));
+        if (remainingQueue.length > 0) {
+            localStorage.setItem('offline_fuel_queue', JSON.stringify(remainingQueue));
+            showToast(`Staged ${remainingQueue.length} items for subsequent validation window.`, 'error');
+        } else {
+            localStorage.removeItem('offline_fuel_queue');
+            showToast('All transaction items synchronized successfully!');
         }
         hideLoader();
+        fetchInitData();
     }
+
+    // iOS Safari network event listener fallbacks
+    window.addEventListener('online', syncOfflineQueue);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && navigator.onLine) syncOfflineQueue();
+    });
 
     async function handleLogin() {
         const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim();
         if(!u||!p) return;
-        document.getElementById('btn-login-submit').disabled=true; showLoader('Igniting...');
+        document.getElementById('btn-login-submit').disabled=true; showLoader('default');
         const res = await callGoogleAPI({action:'login', username:u, password:p});
         hideLoader(); document.getElementById('btn-login-submit').disabled=false;
         if(res.status==='success') {
@@ -506,22 +510,18 @@
             document.getElementById('display-user').innerText = `${p.username}`;
             if(p.role !== 'Admin') document.getElementById('nav-admin').classList.add('hidden');
             
-            // Context mapping change listener
             document.getElementById('entry-vehicle').addEventListener('change', () => {
-                calculateMileage();
-                calculateMaintenance();
-                renderCharts();
+                calculateMileage(); calculateMaintenance(); renderCharts();
             });
 
-            navTo('entry'); 
-            fetchInitData();
-            setTimeout(syncOfflineQueue, 2000); // Check and clear offline entries automatically
+            navTo('entry'); fetchInitData();
+            setTimeout(syncOfflineQueue, 2000);
             if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
         }
     }
 
     async function fetchInitData(isRefresh = false) {
-        if(isRefresh) showLoader('Refreshing...');
+        if(isRefresh) showLoader('refresh');
         const res = await callGoogleAPI({action:'getInitData'});
         if(isRefresh) hideLoader();
         if(res.status === 'success') {
@@ -529,7 +529,6 @@
             globalSettings = res.settings || {};
             globalVehicles = res.vehicles; 
             globalHistory = res.history;
-            
             document.getElementById('display-price').innerText = globalFuelPrice.toFixed(2);
             
             const selectV = document.getElementById('entry-vehicle');
@@ -537,9 +536,7 @@
             selectV.innerHTML = globalVehicles.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
             if(prevVal && globalVehicles.some(v => v.id === prevVal)) selectV.value = prevVal;
 
-            renderHistory(); 
-            calculateMileage(); 
-            calculateMaintenance();
+            renderHistory(); calculateMileage(); calculateMaintenance();
             if(document.getElementById('view-dashboard').classList.contains('active')) renderCharts();
         }
     }
@@ -572,7 +569,7 @@
         const type = document.getElementById('entry-type').value, vId = document.getElementById('entry-vehicle').value;
         const odo = document.getElementById('entry-odo').value, amt = document.getElementById('entry-amount').value;
         if(!vId||!odo||(type==='FUELING'&&!amt)) return showToast('Fill all fields', 'error');
-        showLoader('Logging...');
+        showLoader('logging');
         const res = await callGoogleAPI({action:'logEntry', vehicleId:vId, logType:type, odoReading:parseFloat(odo), amountPaid:type==='FUELING'?parseFloat(amt):0});
         hideLoader();
         if(res.status==='success') { 
@@ -583,8 +580,7 @@
     }
 
     function renderHistory() {
-        let html = '';
-        const activeV = document.getElementById('entry-vehicle').value;
+        let html = ''; const activeV = document.getElementById('entry-vehicle').value;
         globalHistory.forEach(h => {
             if(activeV && h.vehicleId !== activeV) return;
             const isFuel = h.logType === 'FUELING';
@@ -595,7 +591,7 @@
             <p style="margin:0 0 6px;font-size:12px;color:var(--text-muted);">${h.date} | ${h.time} | <strong>${h.loggedBy}</strong></p>
             <h4 style="color:${color};margin-bottom:6px;font-size:18px;">${icon} ${parseFloat(h.odo).toFixed(1)} km</h4><p style="margin:0;font-weight:600;font-size:14px;">${desc}</p></div>`;
         });
-        document.getElementById('history-list').innerHTML = html || '<p style="padding:16px; text-align:center; color:var(--text-muted);">No logs found for this vehicle.</p>';
+        document.getElementById('history-list').innerHTML = html || '<p style="padding:16px; text-align:center; color:var(--text-muted);">No logs match the selected vehicle.</p>';
     }
 
     function openEdit(id) {
@@ -610,7 +606,7 @@
 
     async function saveEdit() {
         const id = document.getElementById('edit-id').value, odo = document.getElementById('edit-odo').value, amt = document.getElementById('edit-amt').value;
-        showLoader('Saving...');
+        showLoader('logging');
         const res = await callGoogleAPI({action:'editEntry', logId:id, odoReading:parseFloat(odo), amountPaid:amt ? parseFloat(amt) : 0});
         hideLoader(); document.getElementById('edit-modal').style.display='none';
         if(res.status==='success') { showToast('Record Updated'); fetchInitData(); } else showToast(res.message, 'error');
@@ -618,21 +614,19 @@
 
     async function updateFuelPrice() {
         const np = document.getElementById('quick-price').value;
-        if(!np) return; showLoader('Updating...');
+        if(!np) return; showLoader('logging');
         const res = await callGoogleAPI({action:'updatePrice', newPrice:parseFloat(np)});
         hideLoader(); document.getElementById('price-modal').style.display='none';
         if(res.status==='success') { showToast('Price Updated'); fetchInitData(); } else showToast(res.message, 'error');
     }
 
     function calculateMileage() {
-        const vehicleId = document.getElementById('entry-vehicle').value;
-        if (!vehicleId) return;
-        
+        const vehicleId = document.getElementById('entry-vehicle').value; if (!vehicleId) return;
         const vehicleLogs = globalHistory.filter(h => h.vehicleId === vehicleId);
         const resLogs = vehicleLogs.filter(h => h.logType === 'RESERVE');
         if(resLogs.length < 2) {
             document.getElementById('dash-mileage').innerText = "-- km/l";
-            return document.getElementById('dash-mileage-sub').innerText = "Need at least 2 Reserve logs for this vehicle profile.";
+            return document.getElementById('dash-mileage-sub').innerText = "Need at least 2 Reserve logs to compute telemetry attributes.";
         }
         const endLog = resLogs[0], startLog = resLogs[1];
         const dist = (parseFloat(endLog.odo) - parseFloat(startLog.odo)).toFixed(1); 
@@ -649,20 +643,17 @@
             document.getElementById('dash-mileage').style.color = mileage > 40 ? 'var(--success)' : 'var(--warning)';
         } else { 
             document.getElementById('dash-mileage').innerText = "-- km/l";
-            document.getElementById('dash-mileage-sub').innerText = "Not enough partial fuel entries caught between reserves."; 
+            document.getElementById('dash-mileage-sub').innerText = "Insufficient fuel tracking entries logged between reserves."; 
         }
     }
 
-    // ─── UPGRADE: ISOLATED MULTI-VEHICLE MAINTENANCE GRAPH GENERATION ───────
     function calculateMaintenance() {
         if (globalHistory.length === 0) return;
-        const vehicleId = document.getElementById('entry-vehicle').value;
-        if (!vehicleId) return;
+        const vehicleId = document.getElementById('entry-vehicle').value; if (!vehicleId) return;
 
         const vehicleLogs = globalHistory.filter(h => h.vehicleId === vehicleId);
         const currentOdo = vehicleLogs.length > 0 ? Math.max(...vehicleLogs.map(h => parseFloat(h.odo) || 0)) : 0;
         
-        // Dynamic variable lookup targeting unique vehicle profiles specifically
         const lubeKey = `LAST_LUBE_ODO_${vehicleId}`;
         const oilKey = `LAST_OIL_ODO_${vehicleId}`;
         
@@ -712,21 +703,19 @@
     async function markServiceDone(type, currentOdo, vehicleId) {
         const name = type === 'LUBE' ? 'Chain Lube' : 'Engine Oil';
         if(!confirm(`Are you sure you want to mark ${name} as done at ${currentOdo} km?`)) return;
-        showLoader('Updating Service...');
+        showLoader('default');
         const res = await callGoogleAPI({action:'updateService', serviceType: type, odoVal: parseFloat(currentOdo), vehicleId: vehicleId});
         hideLoader();
-        if(res.status === 'success') { showToast(res.message); fetchInitData(); }
-        else showToast(res.message, 'error');
+        if(res.status === 'success') { showToast(res.message); fetchInitData(); } else showToast(res.message, 'error');
     }
 
-    // ── CHARTS INTERACTIVE ENGINE (With Empty State Layout Safeguards) ────────
+    // ── CHARTS GRAPH IMPLEMENTATION ENGINE (With Layout Empty Safeguards) ──
     function renderCharts() {
         if(!window.ApexCharts) return;
         const vehicleId = document.getElementById('entry-vehicle').value;
         const vehicleLogs = globalHistory.filter(h => h.vehicleId === vehicleId);
         const fuelLogs = vehicleLogs.filter(h => h.logType === 'FUELING');
 
-        // Dynamically compute advance top summary analytics panels
         let totalSpent = 0, totalLiters = 0;
         fuelLogs.forEach(f => { totalSpent += parseFloat(f.amount)||0; totalLiters += parseFloat(f.liters)||0; });
         document.getElementById('stat-total-spent').innerText = `₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
@@ -735,9 +724,9 @@
         document.getElementById('stat-avg-price').innerText = `₹${globalFuelPrice.toFixed(2)}`;
 
         if(vehicleLogs.length === 0) {
-            document.querySelector("#mileage-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting dataset inputs to construct timeline profiles.</p>';
-            document.querySelector("#spend-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting dataset inputs to construct spending profiles.</p>';
-            document.querySelector("#user-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting dataset inputs.</p>';
+            document.querySelector("#mileage-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting entries to generate chart timelines...</p>';
+            document.querySelector("#spend-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting entries to generate spending profiles...</p>';
+            document.querySelector("#user-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting data assets...</p>';
             return;
         }
 
@@ -773,10 +762,8 @@
 
         let spendMap = {};
         fuelLogs.forEach(h => {
-            const parts = h.date.split('-'); 
-            const month = parts[1] + '/' + parts[2].substring(2);
-            if(!spendMap[month]) spendMap[month] = 0;
-            spendMap[month] += parseFloat(h.amount);
+            const parts = h.date.split('-'); const month = parts[1] + '/' + parts[2].substring(2);
+            if(!spendMap[month]) spendMap[month] = 0; spendMap[month] += parseFloat(h.amount);
         });
         const spendCategories = Object.keys(spendMap).reverse();
         const spendValues = Object.values(spendMap).reverse();
@@ -795,8 +782,7 @@
 
         let userSpendMap = {};
         fuelLogs.forEach(h => {
-            if(!userSpendMap[h.loggedBy]) userSpendMap[h.loggedBy] = 0;
-            userSpendMap[h.loggedBy] += parseFloat(h.amount);
+            if(!userSpendMap[h.loggedBy]) userSpendMap[h.loggedBy] = 0; userSpendMap[h.loggedBy] += parseFloat(h.amount);
         });
         
         if(userChart) userChart.destroy();
@@ -839,7 +825,7 @@
     async function saveUser() {
         const r = document.getElementById('user-row').value, u = document.getElementById('user-name').value, rl = document.getElementById('user-role').value, p = document.getElementById('user-pass').value;
         if(!u) return showToast('Username required', 'error');
-        showLoader('Saving...');
+        showLoader('default');
         const res = await callGoogleAPI({action:'saveUser', rowIdx:r, username:u, role:rl, password:p});
         hideLoader(); document.getElementById('user-modal').style.display='none';
         if(res.status==='success') { showToast('User Saved'); fetchUsers(); } else showToast(res.message, 'error');
@@ -847,7 +833,7 @@
 
     async function deleteUser() {
         if(!confirm('Are you sure you want to completely delete this user?')) return;
-        showLoader('Deleting...');
+        showLoader('default');
         const res = await callGoogleAPI({action:'deleteUser', rowIdx:document.getElementById('user-row').value});
         hideLoader(); document.getElementById('user-modal').style.display='none';
         if(res.status==='success') { showToast('User Deleted'); fetchUsers(); } else showToast(res.message, 'error');
