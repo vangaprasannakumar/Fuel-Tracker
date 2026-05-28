@@ -5,841 +5,896 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Fuel Tracker</title>
     <meta name="theme-color" content="#000000">
-    <meta name="app-version" content="20260520">
+    <meta name="app-version" content="20260527">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-    
     <style>
         :root {
-            --bg-dark: #000000; 
-            --surface: #09090b; 
-            --border: #1a1a24;
-            --text-main: #f4f4f5; 
-            --text-muted: #8b8b99; 
-            --accent: #00eeff; 
-            --accent-hover: #00c3d4;
-            --success: #10b981; 
-            --danger: #ef4444; 
-            --warning: #f59e0b;
-            --mobile-nav-h: 85px;
-            --ease: cubic-bezier(0.4, 0, 0.2, 1);
+            --bg: #000000; --surface: #09090b; --surface2: #0f0f12;
+            --border: #1a1a24; --border2: #242432;
+            --text: #f4f4f5; --muted: #8b8b99; --dim: #44445a;
+            --accent: #00eeff; --green: #10b981; --amber: #f59e0b;
+            --danger: #ef4444; --purple: #a855f7;
+            --ease: cubic-bezier(0.4,0,0.2,1);
+            --spring: cubic-bezier(0.34,1.56,0.64,1);
+        }
+        *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+        body {
+            font-family:'Outfit',sans-serif; color:var(--text); background:var(--bg);
+            height:100dvh; width:100vw; overflow:hidden; display:flex; justify-content:center;
+        }
+        body::before {
+            content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+            background:
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,238,255,0.055) 0%,transparent 70%),
+                radial-gradient(ellipse 40% 30% at 85% 85%, rgba(168,85,247,0.035) 0%,transparent 60%),
+                radial-gradient(ellipse 35% 40% at 5%  60%, rgba(16,185,129,0.025) 0%,transparent 55%);
         }
 
-        * { box-sizing: border-box; }
-        
-        body { 
-            font-family: 'Outfit', sans-serif; 
-            color: var(--text-main); 
-            margin: 0; 
-            background: radial-gradient(circle at top center, #081a1e 0%, #000000 80%);
-            height: 100dvh; 
-            width: 100vw; 
-            overflow: hidden; 
-            display: flex; 
-            justify-content: center; 
-            touch-action: manipulation; 
+        /* ANIMATIONS */
+        @keyframes fadeUp  { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes slideIn { from{opacity:0;transform:translateX(14px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes spin    { to{transform:rotate(360deg)} }
+        @keyframes gshift  { 0%,100%{background-position:0% 50%} 50%{background-position:100% 50%} }
+        @keyframes countUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+        /* LOADER */
+        #loader {
+            position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,0.88);
+            backdrop-filter:blur(20px);display:none;flex-direction:column;
+            align-items:center;justify-content:center;gap:18px;
         }
-        
-        .app-container { 
-            width: 100%; 
-            max-width: 1100px; /* Widescreen landscape view layout optimization */
-            height: 100%; 
-            overflow-y: auto; 
-            display: none; 
-            position: relative;
-            scroll-behavior: smooth;
-            animation: slideUpFade 0.5s var(--ease); 
+        .ring { width:46px;height:46px;border:3px solid rgba(0,238,255,0.1);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite; }
+
+        /* TOAST — BUG-01 FIXED: #toast-msg span present in markup */
+        #toast {
+            position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-110px);
+            background:rgba(16,185,129,0.95);backdrop-filter:blur(16px);color:#fff;
+            padding:12px 22px;border-radius:50px;z-index:100000;
+            transition:all .35s var(--spring);font-weight:600;font-size:14px;
+            opacity:0;pointer-events:none;white-space:nowrap;
+            box-shadow:0 8px 32px rgba(16,185,129,0.3);display:flex;align-items:center;gap:8px;
         }
-        body.is-logged-in .app-container { display: block; }
-        
-        @keyframes slideUpFade { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-        @keyframes slideIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:translateX(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+        #toast.err{background:rgba(239,68,68,0.95);box-shadow:0 8px 32px rgba(239,68,68,0.3)}
 
-        #toast { position:fixed; top:20px; left:50%; transform:translateX(-50%) translateY(-100px); background:rgba(16,185,129,0.95); backdrop-filter:blur(12px); color:white; padding:14px 28px; border-radius:28px; box-shadow:0 8px 28px rgba(16,185,129,0.35); z-index:100000; transition:all 0.3s var(--ease); font-weight:600; font-size:14px; opacity:0; pointer-events:none; }
-        #toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
-        #toast.toast-error { background:rgba(239,68,68,0.95); box-shadow:0 8px 28px rgba(239,68,68,0.35); }
-        
-        /* HIGH-TECH GLASS OVERLAY LOAD ENGINE STYLING */
-        #global-loader { position:fixed; inset:0; z-index:99999; background:rgba(9,9,11,0.92); backdrop-filter:blur(16px); display:none; flex-direction:column; align-items:center; justify-content:center; gap:20px; }
-        .spinner-ring { width:50px; height:50px; border:3px solid rgba(0,238,255,0.15); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; }
-
-        #login-container { display:flex; flex-direction:column; align-items:center; width:100%; max-width:400px; text-align:center; background:var(--surface); border:1px solid var(--border); padding:44px 32px; border-radius:28px; margin-top:10vh; height:fit-content; box-shadow:0 24px 60px rgba(0,238,255,0.05); animation:slideUpFade 0.5s var(--ease); }
-        body.is-logged-in #login-container { display:none !important; }
-        #login-container h2 { margin:0 0 24px; font-weight:700; font-size:28px; color:var(--accent); text-shadow: 0 0 10px rgba(0,238,255,0.3); }
-
-        input[type="text"], input[type="password"], input[type="number"], select { width:100%; padding:16px 20px; margin:8px 0; border-radius:14px; border:1px solid var(--border); background:rgba(0,0,0,0.5); color:var(--text-main); font-family:'Outfit'; font-size:16px !important; transition:all 0.25s var(--ease); }
-        input:focus, select:focus { outline:none; border-color:var(--accent); box-shadow: 0 0 0 2px rgba(0,238,255,0.15); }
-        
-        .btn-main { width:100%; padding:16px; background:var(--accent); color:#000; font-weight:700; border:none; border-radius:14px; font-size:16px; cursor:pointer; margin-top:14px; transition:all 0.2s var(--ease); box-shadow: 0 4px 15px rgba(0,238,255,0.25); }
-        .btn-main:active { transform:translateY(2px) scale(0.98); }
-        .btn-main:disabled { opacity:0.6; cursor:not-allowed; }
-
-        .icon-btn { background:transparent; border:1px solid var(--border); color:var(--text-muted); border-radius:10px; width:40px; height:40px; display:flex; justify-content:center; align-items:center; cursor:pointer; transition:0.2s; }
-        .icon-btn:active { background:var(--border); color:white; }
-
-        #mobile-bottom-nav { 
-            display:none; position:fixed; bottom:16px; left:50%; transform:translateX(-50%); width:92%; max-width:400px; background:rgba(9,9,11,0.95); backdrop-filter:blur(16px); border:1px solid rgba(128,128,128,0.2); border-radius:26px; padding:8px 8px calc(8px + env(safe-area-inset-bottom)); justify-content:space-around; z-index:1000; box-shadow:0 10px 40px rgba(0,0,0,0.7); 
+        /* LOGIN */
+        #login-wrap {
+            display:flex;align-items:center;justify-content:center;
+            width:100%;height:100%;position:relative;z-index:1;
         }
-        body.is-logged-in #mobile-bottom-nav { display:flex; }
-        
-        .mob-nav-item { 
-            display:flex; flex-direction:column; align-items:center; justify-content:center; padding:8px 12px; border-radius:20px; cursor:pointer; color:var(--text-muted); gap:4px; transition:all 0.2s; -webkit-tap-highlight-color:transparent; flex-shrink:0; min-height:54px; flex:1; 
+        body.on #login-wrap{display:none}
+        #login-box {
+            width:100%;max-width:380px;margin:16px;
+            background:rgba(9,9,11,0.92);backdrop-filter:blur(24px);
+            border:1px solid rgba(0,238,255,0.09);border-radius:28px;
+            padding:48px 36px;text-align:center;
+            box-shadow:0 32px 80px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.03);
+            animation:fadeUp .5s var(--ease);
         }
-        .mob-nav-item svg { width:22px; height:22px; flex-shrink:0; }
-        .mob-nav-item span { font-size:11px; font-weight:600; line-height:1; margin-top:4px; flex-shrink:0; }
-        .mob-nav-item.active { background:rgba(0, 238, 255, 0.1); color:var(--accent); text-shadow: 0 0 8px rgba(0,238,255,0.4); }
-        .mob-nav-item.hidden { display:none !important; }
+        #login-box img{width:78px;height:78px;border-radius:20px;box-shadow:0 0 30px rgba(0,238,255,0.18)}
+        #login-box h2{font-family:'Syne',sans-serif;font-size:26px;color:var(--accent);margin:14px 0 26px;text-shadow:0 0 28px rgba(0,238,255,0.35);letter-spacing:-.5px}
 
-        .view-section { padding:16px 20px calc(110px + env(safe-area-inset-bottom)); display:none; opacity:0; transform:translateX(10px); }
-        .view-section.active { display:block; opacity:1; transform:translateX(0); animation:slideIn 0.3s var(--ease) forwards; }
-
-        .header { display:flex; justify-content:space-between; align-items:center; padding: 16px 20px; border-bottom: 1px solid var(--border); background:rgba(9,9,11,0.85); position:sticky; top:0; z-index:100; backdrop-filter:blur(10px); }
-        .header-left { display:flex; align-items:center; gap:12px; }
-        .header-left img { width:38px; height:38px; border-radius:10px; box-shadow:0 0 10px rgba(0,238,255,0.15); }
-        .header-title-box { display:flex; flex-direction:column; }
-        .header-title-box h1 { margin:0; font-size:22px; color:var(--text-main); line-height:1.2; letter-spacing: 0.5px; }
-        
-        .header-right { display:flex; align-items:center; gap:10px; }
-        .user-badge { font-size:11px; font-weight:600; padding:6px 12px; border-radius:18px; border:1px solid var(--border); background:var(--surface); color:var(--accent); }
-
-        .card { 
-            background:rgba(9,9,11,0.6); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,0.03); border-left:3px solid var(--accent); padding:16px; border-radius:16px; margin-bottom:12px; position:relative; box-shadow:0 8px 32px rgba(0,0,0,0.4); transition:all 0.25s var(--ease); 
+        /* INPUTS */
+        input[type=text],input[type=password],input[type=number],select {
+            width:100%;padding:14px 18px;margin:6px 0;border-radius:14px;
+            border:1px solid var(--border2);background:rgba(0,0,0,0.4);color:var(--text);
+            font-family:'Outfit';font-size:16px!important;transition:all .25s var(--ease);outline:none;
         }
-        .card:hover { transform:translateY(-2px); border-color:rgba(0,238,255,0.15); box-shadow:0 12px 40px rgba(0,238,255,0.04); }
-        .card h4 { margin:0 0 4px; font-size:16px; color:var(--text-main); }
-        .card p { margin:4px 0; font-size:13px; color:var(--text-muted); }
-        .edit-badge { position:absolute; top:16px; right:16px; font-size:12px; padding:6px 12px; border-radius:8px; border:1px solid var(--border); cursor:pointer; color:var(--text-muted); transition:0.2s; font-weight:600; }
-        .edit-badge:active { background:var(--border); }
-        
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(5px); z-index:10000; justify-content:center; align-items:center; }
-        .modal-content { background:var(--surface); padding:24px; border-radius:24px; width:90%; max-width:400px; border:1px solid var(--border); }
-        .chart-box { background:rgba(9,9,11,0.4); backdrop-filter:blur(10px); border:1px solid var(--border); border-radius:16px; padding:16px 8px; margin-bottom:16px; }
+        input:focus,select:focus{border-color:var(--accent);background:rgba(0,238,255,0.02);box-shadow:0 0 0 3px rgba(0,238,255,0.07)}
 
-        /* ADVANCED COLUMN GRID ARCHITECTURE */
-        .stats-summary-strip { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 20px; }
-        .charts-flex-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .maintenance-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .entry-split-layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
-        .admin-split-layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
+        /* BUTTONS */
+        .btn{width:100%;padding:14px;border:none;border-radius:13px;font-family:'Outfit';font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;transition:all .2s var(--ease)}
+        .btn-p{background:var(--accent);color:#000;box-shadow:0 4px 20px rgba(0,238,255,0.22)}
+        .btn-p:hover{background:#00d4e6;transform:translateY(-1px);box-shadow:0 6px 26px rgba(0,238,255,0.32)}
+        .btn-p:active{transform:translateY(1px) scale(0.98)}
+        .btn-g{background:transparent;border:1px solid var(--border2);color:var(--muted);box-shadow:none}
+        .btn-g:hover{border-color:var(--border);color:var(--text)}
+        .btn-d{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2);color:var(--danger);box-shadow:none}
+        .btn:disabled{opacity:.5;cursor:not-allowed}
+        .btn-auto{width:auto;padding:8px 16px;margin-top:0}
+        .btn-sm{width:auto;padding:7px 14px;font-size:12px;margin-top:0;font-weight:700}
+        .icon-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;width:38px;height:38px;display:flex;justify-content:center;align-items:center;cursor:pointer;transition:.2s;flex-shrink:0}
+        .icon-btn:hover{color:var(--text);border-color:var(--border2)}
 
-        @media (min-width: 768px) {
-            .stats-summary-strip { grid-template-columns: repeat(4, 1fr); }
-            .charts-flex-grid { grid-template-columns: repeat(2, 1fr); }
-            .maintenance-grid { grid-template-columns: repeat(2, 1fr); }
-            .entry-split-layout { grid-template-columns: 1.2fr 0.8fr; gap: 24px; }
-            .admin-split-layout { grid-template-columns: 1fr 1fr; gap: 24px; }
-            #mobile-bottom-nav { left: 50%; transform: translateX(-50%); width: 100%; max-width: 500px; bottom: 20px; }
-        }
+        /* APP CONTAINER */
+        .app{width:100%;max-width:1100px;height:100%;overflow-y:auto;display:none;position:relative;z-index:1;scroll-behavior:smooth}
+        body.on .app{display:block}
 
-        #scrollToTopBtn {
-            display: none; position: fixed; bottom: 95px; right: 20px; z-index: 998; background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); border-radius: 50%; width: 44px; height: 44px; cursor: pointer; box-shadow: 0 4px 14px rgba(0,0,0,0.5); align-items: center; justify-content: center; padding: 0; transition: 0.2s;
-        }
-        #scrollToTopBtn:active { transform: scale(0.9); background: var(--accent); color: #000; }
+        /* HEADER */
+        .hdr{display:flex;justify-content:space-between;align-items:center;padding:13px 20px;border-bottom:1px solid rgba(255,255,255,0.03);background:rgba(0,0,0,0.82);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px)}
+        .hdr-l{display:flex;align-items:center;gap:11px}
+        .hdr-l img{width:34px;height:34px;border-radius:9px}
+        .hdr h1{font-family:'Syne',sans-serif;font-size:19px;letter-spacing:-.3px}
+        .hdr-r{display:flex;align-items:center;gap:8px}
+        .chip{font-size:11px;font-weight:700;padding:5px 12px;border-radius:50px;border:1px solid rgba(0,238,255,0.14);background:rgba(0,238,255,0.06);color:var(--accent);letter-spacing:.3px}
+
+        /* BOTTOM NAV */
+        #bnav{display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:92%;max-width:420px;background:rgba(5,5,7,0.96);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.055);border-radius:28px;padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;z-index:1000;box-shadow:0 16px 48px rgba(0,0,0,0.8)}
+        body.on #bnav{display:flex}
+        .ni{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:20px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);flex:1;min-height:52px;-webkit-tap-highlight-color:transparent}
+        .ni svg{width:20px;height:20px}
+        .ni span{font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+        .ni.on{color:var(--accent);background:rgba(0,238,255,0.08)}
+        .ni.hid{display:none!important}
+
+        /* VIEWS */
+        .view{padding:20px 20px calc(110px + env(safe-area-inset-bottom));display:none;opacity:0}
+        .view.on{display:block;opacity:1;animation:slideIn .3s var(--ease) forwards}
+        .vtitle{font-family:'Syne',sans-serif;font-size:25px;letter-spacing:-.5px;margin-bottom:18px}
+
+        /* CARDS */
+        .card{background:rgba(9,9,11,0.7);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.04);border-radius:18px;padding:16px;margin-bottom:12px;position:relative;transition:all .25s var(--ease)}
+        .card:hover{border-color:rgba(255,255,255,0.07)}
+        .card h4{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
+        .card p{font-size:13px;color:var(--muted)}
+
+        /* STAT CARDS */
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
+        @media(min-width:768px){.stats-grid{grid-template-columns:repeat(4,1fr)}}
+        .sc{border-radius:20px;padding:18px 16px;position:relative;overflow:hidden;transition:all .3s var(--ease)}
+        .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--scc),transparent);opacity:.7}
+        .sc::before{content:'';position:absolute;inset:0;border-radius:20px;background:radial-gradient(circle at 0% 0%,var(--scg) 0%,transparent 70%);opacity:0;transition:opacity .3s}
+        .sc:hover{transform:translateY(-2px)}
+        .sc:hover::before{opacity:1}
+        .sc-c{--scc:#00eeff;--scg:rgba(0,238,255,0.08);background:linear-gradient(135deg,rgba(0,238,255,0.07) 0%,rgba(9,9,11,0.95) 55%);border:1px solid rgba(0,238,255,0.1)}
+        .sc-g{--scc:#10b981;--scg:rgba(16,185,129,0.08);background:linear-gradient(135deg,rgba(16,185,129,0.07) 0%,rgba(9,9,11,0.95) 55%);border:1px solid rgba(16,185,129,0.1)}
+        .sc-a{--scc:#f59e0b;--scg:rgba(245,158,11,0.08);background:linear-gradient(135deg,rgba(245,158,11,0.07) 0%,rgba(9,9,11,0.95) 55%);border:1px solid rgba(245,158,11,0.1)}
+        .sc-p{--scc:#a855f7;--scg:rgba(168,85,247,0.08);background:linear-gradient(135deg,rgba(168,85,247,0.07) 0%,rgba(9,9,11,0.95) 55%);border:1px solid rgba(168,85,247,0.1)}
+        .sc-icon{font-size:20px;margin-bottom:10px}
+        .sc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:4px}
+        .sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1;animation:countUp .5s var(--ease)}
+
+        /* MILEAGE HERO */
+        .hero{background:linear-gradient(-45deg,#000d11,#001c22,#00111a,#000000);background-size:400% 400%;animation:gshift 12s ease infinite;border-radius:24px;border:1px solid rgba(0,238,255,0.11);box-shadow:0 0 60px rgba(0,238,255,0.04),inset 0 1px 0 rgba(0,238,255,0.07);padding:22px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;overflow:hidden}
+        .hero::after{content:'⚡';position:absolute;top:-10px;right:120px;font-size:110px;opacity:.025;pointer-events:none}
+        .hero-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent);margin-bottom:8px;opacity:.8}
+        #dash-km{font-family:'Syne',sans-serif;font-size:48px;font-weight:800;line-height:1;color:var(--text);letter-spacing:-1px;text-shadow:0 0 40px rgba(0,238,255,0.12)}
+        #dash-km.good{color:var(--green);text-shadow:0 0 40px rgba(16,185,129,0.18)}
+        #dash-km.warn{color:var(--amber);text-shadow:0 0 40px rgba(245,158,11,0.18)}
+        #dash-km.poor{color:var(--danger);text-shadow:0 0 40px rgba(239,68,68,0.18)}
+        #dash-sub{font-size:12px;color:var(--muted);margin-top:7px}
+
+        /* GAUGE */
+        .gauge-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:6px}
+        .gauge-ring{width:98px;height:98px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;transition:all 1.2s var(--ease)}
+        .gauge-inner{width:72px;height:72px;background:#08080e;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;z-index:1}
+        .g-pct{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--text)}
+        .g-sub{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+
+        /* SECTION LABEL */
+        .slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin:22px 0 12px;display:flex;align-items:center;gap:10px}
+        .slabel::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,0.055),transparent)}
+
+        /* MAINTENANCE */
+        .maint-grid{display:grid;grid-template-columns:1fr;gap:12px}
+        @media(min-width:768px){.maint-grid{grid-template-columns:1fr 1fr}}
+        .maint-card{background:rgba(0,0,0,0.28);padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,0.04)}
+        .maint-hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
+        .pbar-bg{width:100%;background:rgba(255,255,255,0.05);height:5px;border-radius:3px;overflow:hidden}
+        .pbar-fill{height:100%;border-radius:3px;transition:width .8s var(--ease),background .3s}
+
+        /* MILEAGE HISTORY TABLE */
+        .mh-wrap{overflow-x:auto;border-radius:16px;border:1px solid rgba(255,255,255,0.04);background:rgba(9,9,11,0.5)}
+        .mh-table{width:100%;border-collapse:collapse}
+        .mh-table th{padding:11px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,0.04)}
+        .mh-table td{padding:11px 13px;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,0.02);transition:background .15s}
+        .mh-table tr:last-child td{border-bottom:none}
+        .mh-table tr:hover td{background:rgba(255,255,255,0.015)}
+        .mh-table .r{text-align:right}
+        .mh-table .c{text-align:center}
+        .eff-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
+        .gbadge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:800;font-family:'Syne',sans-serif;border:1px solid;letter-spacing:.4px}
+        .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+        .mini-stat{background:rgba(9,9,11,0.6);border:1px solid rgba(255,255,255,0.04);border-radius:12px;padding:12px 14px}
+        .mini-stat-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:4px}
+        .mini-stat-v{font-family:'Syne',sans-serif;font-size:18px;font-weight:800}
+
+        /* CHARTS */
+        .chart-box{background:rgba(9,9,11,0.4);border:1px solid rgba(255,255,255,0.03);border-radius:16px;padding:16px 8px;margin-bottom:16px}
+        .chart-lbl{font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}
+        .charts-grid{display:grid;grid-template-columns:1fr;gap:0}
+        @media(min-width:768px){.charts-grid{grid-template-columns:1fr 1fr;gap:16px}}
+
+        /* HISTORY */
+        .log-card{background:rgba(9,9,11,0.65);border:1px solid rgba(255,255,255,0.03);border-radius:16px;padding:14px 16px;margin-bottom:8px;border-left:2px solid var(--lc,var(--accent));transition:all .2s var(--ease);position:relative}
+        .log-card:hover{border-color:rgba(255,255,255,0.06);transform:translateY(-1px)}
+        .log-meta{font-size:11px;color:var(--dim);margin-bottom:5px}
+        .log-odo{font-family:'Syne',sans-serif;font-size:21px;font-weight:700;color:var(--lc,var(--accent));margin-bottom:3px}
+        .log-desc{font-size:13px;font-weight:600;color:var(--muted)}
+        .epill{position:absolute;top:13px;right:13px;font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;border:1px solid var(--border2);cursor:pointer;color:var(--muted);transition:.2s;background:transparent}
+        .epill:hover{background:var(--border);color:var(--text)}
+
+        /* PAGINATION */
+        .pgn{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;padding-bottom:6px;flex-wrap:wrap}
+        .pbtn{background:rgba(9,9,11,0.8);border:1px solid var(--border2);color:var(--muted);border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit'}
+        .pbtn:hover{border-color:var(--accent);color:var(--accent)}
+        .pbtn.on{background:rgba(0,238,255,0.09);border-color:rgba(0,238,255,0.28);color:var(--accent)}
+        .pbtn:disabled{opacity:.3;cursor:not-allowed}
+
+        /* ENTRY LAYOUT */
+        .entry-layout{display:grid;grid-template-columns:1fr;gap:16px}
+        @media(min-width:768px){.entry-layout{grid-template-columns:1.2fr 0.8fr;gap:24px}}
+
+        /* TYPE TOGGLE */
+        .type-row{display:flex;gap:8px;margin-bottom:18px}
+        .tbtn{flex:1;padding:12px;border-radius:12px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:.2s;font-family:'Outfit'}
+        .tbtn.fuel{background:rgba(0,238,255,0.09);border-color:rgba(0,238,255,0.28);color:var(--accent)}
+        .tbtn.res{background:rgba(245,158,11,0.09);border-color:rgba(245,158,11,0.28);color:var(--amber)}
+
+        /* ADMIN TABS */
+        .atabs{display:flex;gap:6px;margin-bottom:20px}
+        .atab{padding:8px 20px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;transition:.2s;border:1px solid var(--border2);color:var(--muted);background:transparent;font-family:'Outfit'}
+        .atab.on{background:rgba(0,238,255,0.07);border-color:rgba(0,238,255,0.2);color:var(--accent)}
+        .apanel{display:none}
+        .apanel.on{display:block}
+        .admin-layout{display:grid;grid-template-columns:1fr;gap:16px}
+        @media(min-width:768px){.admin-layout{grid-template-columns:1fr 1fr;gap:20px}}
+
+        /* MODALS */
+        .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);z-index:10000;justify-content:center;align-items:flex-end}
+        @media(min-width:480px){.modal{align-items:center}}
+        .mbox{background:var(--surface);border:1px solid rgba(255,255,255,0.05);border-radius:24px 24px 0 0;padding:28px 24px 38px;width:100%;max-width:420px;animation:fadeUp .25s var(--spring)}
+        @media(min-width:480px){.mbox{border-radius:24px;padding:28px 24px}}
+        .mtitle{font-family:'Syne',sans-serif;font-size:20px;margin-bottom:18px}
+        .macts{display:flex;gap:10px;margin-top:22px}
+        .flabel{font-size:13px;color:var(--muted);display:block;margin:13px 0 5px;font-weight:500}
+
+        /* CONFIRM MODAL */
+        #cfm-modal .mbox{text-align:center;max-width:360px}
+
+        /* ROWS */
+        .vrow{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:8px;background:rgba(0,0,0,0.28)}
+        .badge{display:inline-block;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;background:rgba(0,238,255,0.08);color:var(--accent);border:1px solid rgba(0,238,255,0.14)}
+        .badge-a{background:rgba(245,158,11,0.08);color:var(--amber);border-color:rgba(245,158,11,0.14)}
+        .badge-p{background:rgba(168,85,247,0.08);color:var(--purple);border-color:rgba(168,85,247,0.14)}
+
+        /* SCROLL TOP */
+        #stb{display:none;position:fixed;bottom:95px;right:18px;z-index:998;background:rgba(9,9,11,0.9);color:var(--muted);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;cursor:pointer;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(10px)}
+        #stb:hover{color:var(--accent);border-color:rgba(0,238,255,0.3)}
     </style>
 </head>
 <body>
 
-<div id="global-loader">
-    <div class="spinner-ring"></div>
-    <div id="gl-msg" style="font-size:16px; font-weight:600; color:var(--text-main); text-align:center;">Processing Telemetry...</div>
-    <div id="gl-sub" style="font-size:13px; color:var(--text-muted);">Please stand by</div>
+<div id="loader">
+    <div class="ring"></div>
+    <div id="l-msg" style="font-size:15px;font-weight:600;color:var(--text);text-align:center"></div>
+    <div id="l-sub" style="font-size:12px;color:var(--muted)"></div>
 </div>
 
-<div id="login-container">
-    <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo" style="width:100px; height:100px; border-radius:24px; margin-bottom:16px; box-shadow: 0 0 20px rgba(0,238,255,0.2);">
-    <h2>Fuel Tracker</h2>
-    <input type="text" id="login-user" placeholder="Username" onkeydown="if(event.key==='Enter')document.getElementById('login-pass').focus();">
-    <input type="password" id="login-pass" placeholder="Password" onkeydown="if(event.key==='Enter')handleLogin();">
-    <button type="button" class="btn-main" id="btn-login-submit" onclick="handleLogin()">Ignition (Log In)</button>
-    <p id="login-msg" style="color:var(--danger);font-size:14px;margin-top:16px;font-weight:500;"></p>
+<!-- BUG-01 FIX: toast-msg span now exists in HTML -->
+<div id="toast"><span id="t-icon"></span><span id="toast-msg"></span></div>
+
+<!-- LOGIN -->
+<div id="login-wrap">
+    <div id="login-box">
+        <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo">
+        <h2>Fuel Tracker</h2>
+        <input type="text"     id="l-user" placeholder="Username"  onkeydown="if(event.key==='Enter')document.getElementById('l-pass').focus()">
+        <input type="password" id="l-pass" placeholder="Password"  onkeydown="if(event.key==='Enter')doLogin()">
+        <button class="btn btn-p" id="l-btn" onclick="doLogin()">Ignition — Log In</button>
+        <p id="l-err" style="color:var(--danger);font-size:13px;margin-top:12px;min-height:18px;font-weight:500"></p>
+    </div>
 </div>
 
-<div class="app-container" id="main-app">
-    <div class="header">
-        <div class="header-left">
+<!-- APP -->
+<div class="app" id="APP">
+    <div class="hdr">
+        <div class="hdr-l">
             <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo">
-            <div class="header-title-box">
-                <h1>Fuel Tracker</h1>
-            </div>
+            <h1>Fuel Tracker</h1>
         </div>
-        <div class="header-right">
-            <button onclick="fetchInitData(true)" class="icon-btn" title="Refresh"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
-            <span class="user-badge" id="display-user">--</span>
-            <button onclick="logout()" class="icon-btn" title="Logout" style="border-color:var(--danger); color:var(--danger);"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
+        <div class="hdr-r">
+            <button onclick="fetchInit(true)" class="icon-btn" title="Refresh">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            </button>
+            <span class="chip" id="d-user">--</span>
+            <button onclick="logout()" class="icon-btn" title="Logout" style="border-color:rgba(239,68,68,0.3);color:var(--danger)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            </button>
         </div>
     </div>
 
-    <div id="view-entry" class="view-section active">
-        <div class="entry-split-layout">
+    <!-- ENTRY -->
+    <div id="view-entry" class="view on">
+        <h2 class="vtitle">Log Entry</h2>
+        <div class="entry-layout">
             <div>
-                <h2 style="margin:0 0 16px; font-size:24px;">Log Entry</h2>
-                <label style="font-size:14px;color:var(--text-muted);margin-bottom:8px;display:block;">Select Vehicle</label>
-                <select id="entry-vehicle" style="margin-bottom:24px;"></select>
-
-                <div style="display:flex; gap:10px; margin-bottom: 24px;">
-                    <button class="btn-main" id="btn-type-fuel" style="margin-top:0;" onclick="setEntryType('FUELING')">⛽ Fueling</button>
-                    <button class="btn-main" id="btn-type-res" style="margin-top:0; background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="setEntryType('RESERVE')">⚠️ Reserve Hit</button>
+                <label class="flabel">Vehicle</label>
+                <select id="ev" style="margin-bottom:16px"></select>
+                <div class="type-row">
+                    <button class="tbtn fuel" id="bt-f" onclick="setType('FUELING')">⛽ Fueling</button>
+                    <button class="tbtn"      id="bt-r" onclick="setType('RESERVE')">⚠️ Reserve Hit</button>
                 </div>
-                <input type="hidden" id="entry-type" value="FUELING">
-                
-                <label style="font-size:14px;color:var(--text-muted);margin-bottom:8px;display:block;">Odometer Reading (km)</label>
-                <input type="number" id="entry-odo" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 15420">
-                
-                <div id="entry-amount-container">
-                    <label style="font-size:14px;color:var(--text-muted);margin-top:16px;margin-bottom:8px;display:block;">Amount Paid (₹)</label>
-                    <input type="number" id="entry-amount" inputmode="decimal" placeholder="e.g. 500">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                        <p id="live-liters-calc" style="font-size:13px; color:var(--accent); margin:0;">Estimated: 0.00 L (at ₹<span id="display-price">--</span>/L)</p>
-                        <button onclick="openPriceModal()" style="background:transparent; border:none; color:var(--text-muted); text-decoration:underline; font-size:13px; cursor:pointer;">Edit Price</button>
+                <input type="hidden" id="e-type" value="FUELING">
+                <label class="flabel">Odometer (km)</label>
+                <input type="number" id="e-odo" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 15420">
+                <div id="fuel-fields">
+                    <label class="flabel">Amount Paid (₹)</label>
+                    <input type="number" id="e-amt" inputmode="decimal" placeholder="e.g. 500">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                        <p id="live-est" style="font-size:13px;color:var(--accent);margin:0">Estimated: 0.00 L (at ₹<span id="d-price">--</span>/L)</p>
+                        <button onclick="openPriceModal()" style="background:none;border:none;color:var(--dim);font-size:12px;cursor:pointer;text-decoration:underline;font-family:'Outfit'">Edit Price</button>
                     </div>
                 </div>
-                <button class="btn-main" id="btn-submit-entry" onclick="submitEntry()" style="margin-top:32px;">Log Entry</button>
+                <button class="btn btn-p" id="b-submit" onclick="submitEntry()" style="margin-top:26px">Log Entry</button>
             </div>
-            <div style="padding-top:40px;">
-                <div class="card" style="border-left-color: var(--accent);">
+            <div style="padding-top:44px">
+                <div class="card" style="border-left:2px solid var(--accent)">
                     <h4>Pump Side Assist</h4>
-                    <p>Entries validate against odometer drops before saving. Offline logs stage securely in an itemized local queue configuration.</p>
+                    <p style="margin-top:6px">Entries validate against odometer history. Offline logs stage in an itemized queue and auto-sync on reconnect.</p>
+                </div>
+                <div class="card" style="border-left:2px solid var(--amber)">
+                    <h4>⚠️ Reserve Hit</h4>
+                    <p style="margin-top:6px">Log each time you hit low fuel. Two reserve logs unlock True Mileage calculation.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="view-history" class="view-section">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
-            <h2 style="margin:0; font-size:24px;">Log History</h2>
+    <!-- HISTORY -->
+    <div id="view-history" class="view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h2 class="vtitle" style="margin:0">Log History</h2>
+            <span id="h-count" style="font-size:12px;color:var(--dim)"></span>
         </div>
-        <div id="history-list"></div>
+        <div id="h-list"></div>
+        <div id="h-pgn" class="pgn"></div>
     </div>
 
-    <div id="view-dashboard" class="view-section">
-        <h2 style="margin:0 0 16px; font-size:24px;">Advanced Analytics</h2>
-        
-        <div class="stats-summary-strip">
-            <div class="card" style="border-left-color: var(--accent); margin-bottom: 0;">
-                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Total Spend</p>
-                <h3 id="stat-total-spent" style="margin:6px 0 0; font-size:20px;">₹0</h3>
-            </div>
-            <div class="card" style="border-left-color: var(--success); margin-bottom: 0;">
-                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Total Fuel</p>
-                <h3 id="stat-total-liters" style="margin:6px 0 0; font-size:20px;">0.00 L</h3>
-            </div>
-            <div class="card" style="border-left-color: var(--warning); margin-bottom: 0;">
-                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Total Logs</p>
-                <h3 id="stat-total-logs" style="margin:6px 0 0; font-size:20px;">0</h3>
-            </div>
-            <div class="card" style="border-left-color: #a855f7; margin-bottom: 0;">
-                <p style="font-size:11px; text-transform:uppercase; color:var(--text-muted); margin:0;">Base Price</p>
-                <h3 id="stat-avg-price" style="margin:6px 0 0; font-size:20px;">₹0.00</h3>
-            </div>
+    <!-- DASHBOARD -->
+    <div id="view-dashboard" class="view">
+        <h2 class="vtitle">Analytics</h2>
+        <div class="stats-grid">
+            <div class="sc sc-c"><div class="sc-icon">💰</div><div class="sc-label">Total Spend</div><div class="sc-val" id="s-spent">₹0</div></div>
+            <div class="sc sc-g"><div class="sc-icon">⛽</div><div class="sc-label">Total Fuel</div><div class="sc-val" id="s-liters">0 L</div></div>
+            <div class="sc sc-a"><div class="sc-icon">📋</div><div class="sc-label">Total Logs</div><div class="sc-val" id="s-logs">0</div></div>
+            <div class="sc sc-p"><div class="sc-icon">🏷️</div><div class="sc-label">Base Price</div><div class="sc-val" id="s-price">₹0</div></div>
         </div>
 
-        <div class="card" style="border-left-color:var(--success);">
-            <h4 style="color:var(--success);">True Mileage Mathematics</h4>
-            <p>Calculates exact efficiency values between the two most recent reserve tank points.</p>
-            <h2 id="dash-mileage" style="margin:10px 0; font-size:36px; color:var(--text-main);">-- km/l</h2>
-            <p id="dash-mileage-sub" style="font-size:12px; color:var(--text-muted);">Loading telemetry data...</p>
-        </div>
-
-        <h4 style="color:var(--text-main); margin:24px 0 12px;">Isolated Maintenance Lifecycles</h4>
-        <div class="card" style="border-left-color:var(--text-muted); padding:16px 12px;">
-            <div id="maintenance-card">
-                <p style="text-align:center; color:var(--text-muted);">Awaiting vehicle dataset match...</p>
-            </div>
-        </div>
-        
-        <h4 style="color:var(--text-main); margin:24px 0 12px;">Interactive Telemetry Charts</h4>
-        <div class="charts-flex-grid">
+        <div class="hero">
             <div>
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Mileage Trend Timeline</p>
-                <div class="chart-box"><div id="mileage-chart"></div></div>
+                <div class="hero-lbl">⚡ True Reserve-to-Reserve Efficiency</div>
+                <div id="dash-km">-- km/L</div>
+                <p id="dash-sub">Loading telemetry...</p>
             </div>
-            <div>
-                <p style="font-size:13px; color:var(--text-muted); margin-bottom:6px;">Monthly Expenditures (₹)</p>
-                <div class="chart-box"><div id="spend-chart"></div></div>
-            </div>
-        </div>
-
-        <h4 style="color:var(--text-main); margin:12px 0 12px;">Shared Cost Contribution</h4>
-        <div class="chart-box"><div id="user-chart"></div></div>
-    </div>
-
-    <div id="view-admin" class="view-section">
-        <h2 style="margin:0 0 16px; font-size:24px;">Admin Controls</h2>
-        <div class="admin-split-layout">
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <h4 style="color:var(--warning); margin:0;">App User Management</h4>
-                    <button class="btn-main" style="width:auto; padding:8px 16px; margin:0; box-shadow:none; border-radius:10px;" onclick="openUserModal()">+ Add User</button>
-                </div>
-                <p>Configure security profiles and active platform access layers.</p>
-                <div id="admin-user-list" style="margin-top:16px;"></div>
-            </div>
-            <div>
-                <div class="card" style="border-left-color: var(--danger);">
-                    <h4>Audit Trail Ledger</h4>
-                    <p>All profile updates, target price logs, and database overrides record directly into the Audit Sheet backend.</p>
+            <div class="gauge-wrap">
+                <div class="gauge-ring" id="g-ring">
+                    <div class="gauge-inner">
+                        <div class="g-pct" id="g-pct">0%</div>
+                        <div class="g-sub">Score</div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
+        <div class="slabel">Maintenance Lifecycle</div>
+        <div id="maint-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Awaiting vehicle data...</p></div>
+
+        <div class="slabel">Efficiency Timeline</div>
+        <div id="mh-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs to compute segments.</p></div>
+
+        <div class="slabel">Telemetry Charts</div>
+        <div class="charts-grid">
+            <div><div class="chart-lbl">Mileage Trend (km/L)</div><div class="chart-box"><div id="ch-mileage"></div></div></div>
+            <div><div class="chart-lbl">Monthly Spend (₹)</div><div class="chart-box"><div id="ch-spend"></div></div></div>
+        </div>
+        <div class="chart-lbl">Shared Cost Contribution</div>
+        <div class="chart-box"><div id="ch-user"></div></div>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="view-admin" class="view">
+        <h2 class="vtitle">Admin Controls</h2>
+        <div class="atabs">
+            <button class="atab on" id="at-users"    onclick="switchTab('users')">👤 Users</button>
+            <button class="atab"    id="at-vehicles" onclick="switchTab('vehicles')">🚗 Vehicles</button>
+        </div>
+        <div class="apanel on" id="ap-users">
+            <div class="admin-layout">
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                        <span style="font-weight:700;font-size:15px">User Accounts</span>
+                        <button class="btn btn-p btn-sm" onclick="openUserModal()">+ Add User</button>
+                    </div>
+                    <div id="user-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
+                </div>
+                <div>
+                    <div class="card" style="border-left:2px solid var(--danger)">
+                        <h4>Audit Trail</h4>
+                        <p style="margin-top:6px">All account changes, price updates, and edits are recorded in the Audit_Log sheet with timestamp and user attribution.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="apanel" id="ap-vehicles">
+            <div class="admin-layout">
+                <div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                        <span style="font-weight:700;font-size:15px">Fleet Vehicles</span>
+                        <button class="btn btn-p btn-sm" onclick="openVehModal()">+ Add Vehicle</button>
+                    </div>
+                    <div id="veh-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
+                </div>
+                <div>
+                    <div class="card" style="border-left:2px solid var(--green)">
+                        <h4>Vehicle IDs</h4>
+                        <p style="margin-top:6px">IDs are auto-generated from the vehicle name on creation (e.g. V-ACT-4821). They are permanent namespace keys for all logs and maintenance settings.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!-- /app -->
+
+<!-- MODALS -->
 <div class="modal" id="price-modal">
-    <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--accent);">Update Fuel Price</h3>
-        <label style="color:var(--text-muted);font-size:13px;">New Price per Liter (₹)</label>
-        <input type="number" id="quick-price" step="0.01" inputmode="decimal">
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-main" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="document.getElementById('price-modal').style.display='none'">Cancel</button>
-            <button class="btn-main" onclick="updateFuelPrice()">Update Price</button>
-        </div>
+    <div class="mbox">
+        <div class="mtitle" style="color:var(--accent)">Update Fuel Price</div>
+        <label class="flabel">New Price per Liter (₹)</label>
+        <input type="number" id="m-price" step="0.01" inputmode="decimal">
+        <div class="macts"><button class="btn btn-g" onclick="closeM('price-modal')">Cancel</button><button class="btn btn-p" onclick="updatePrice()">Update</button></div>
     </div>
 </div>
 
 <div class="modal" id="edit-modal">
-    <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--accent);">Edit Record</h3>
-        <input type="hidden" id="edit-id">
-        <label style="color:var(--text-muted);font-size:13px;">Odometer (km)</label>
-        <input type="number" id="edit-odo" inputmode="numeric" pattern="[0-9]*">
-        <label style="color:var(--text-muted);font-size:13px;margin-top:10px;">Amount Paid (₹)</label>
-        <input type="number" id="edit-amt" inputmode="decimal">
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-main" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="document.getElementById('edit-modal').style.display='none'">Cancel</button>
-            <button class="btn-main" onclick="saveEdit()">Save Changes</button>
-        </div>
+    <div class="mbox">
+        <div class="mtitle" style="color:var(--accent)">Edit Record</div>
+        <input type="hidden" id="m-edit-id"><input type="hidden" id="m-edit-type">
+        <label class="flabel">Odometer (km)</label>
+        <input type="number" id="m-edit-odo" inputmode="numeric" pattern="[0-9]*">
+        <label class="flabel" id="m-edit-amt-lbl">Amount Paid (₹)</label>
+        <input type="number" id="m-edit-amt" inputmode="decimal">
+        <div class="macts"><button class="btn btn-g" onclick="closeM('edit-modal')">Cancel</button><button class="btn btn-p" onclick="saveEdit()">Save Changes</button></div>
     </div>
 </div>
 
 <div class="modal" id="user-modal">
-    <div class="modal-content">
-        <h3 style="margin-top:0; color:var(--warning);" id="user-modal-title">Edit User</h3>
-        <input type="hidden" id="user-row">
-        <label style="color:var(--text-muted);font-size:13px;">Username</label>
-        <input type="text" id="user-name">
-        <label style="color:var(--text-muted);font-size:13px;margin-top:10px;">Role</label>
-        <select id="user-role">
-            <option value="Admin">Admin</option>
-            <option value="User">User</option>
-        </select>
-        <label style="color:var(--text-muted);font-size:13px;margin-top:10px;">Password (Leave blank to keep current)</label>
-        <input type="password" id="user-pass">
-        <div style="display:flex; gap:10px; margin-top:20px;">
-            <button class="btn-main" style="background:transparent; border:1px solid var(--border); color:var(--text-muted); box-shadow:none;" onclick="document.getElementById('user-modal').style.display='none'">Cancel</button>
-            <button class="btn-main" style="background:var(--danger); display:none; box-shadow:none;" id="btn-del-user" onclick="deleteUser()">Delete</button>
-            <button class="btn-main" style="background:var(--warning); color:#000; box-shadow:none;" onclick="saveUser()">Save User</button>
+    <div class="mbox">
+        <div class="mtitle" id="um-title" style="color:var(--amber)">Edit User</div>
+        <input type="hidden" id="um-row"><input type="hidden" id="um-orig">
+        <label class="flabel">Username</label><input type="text" id="um-name">
+        <label class="flabel">Role</label>
+        <select id="um-role"><option value="Admin">Admin</option><option value="User">User</option></select>
+        <label class="flabel">Password <span style="color:var(--dim);font-size:11px">(blank = keep current)</span></label>
+        <input type="password" id="um-pass">
+        <div class="macts">
+            <button class="btn btn-g" onclick="closeM('user-modal')">Cancel</button>
+            <button class="btn btn-d btn-auto" id="um-del" style="display:none" onclick="deleteUser()">Delete</button>
+            <button class="btn btn-auto" onclick="saveUser()" style="background:var(--amber);color:#000;font-weight:700">Save User</button>
         </div>
     </div>
 </div>
 
-<nav id="mobile-bottom-nav">
-    <div class="mob-nav-item active" id="nav-entry" onclick="navTo('entry')">
+<div class="modal" id="veh-modal">
+    <div class="mbox">
+        <div class="mtitle" id="vm-title" style="color:var(--green)">Add Vehicle</div>
+        <input type="hidden" id="vm-id">
+        <label class="flabel">Vehicle Name</label><input type="text" id="vm-name" placeholder="e.g. Activa 6G">
+        <label class="flabel">Type</label>
+        <select id="vm-type"><option value="Bike">Bike / Scooter</option><option value="Car">Car</option><option value="Truck">Truck / Commercial</option><option value="Other">Other</option></select>
+        <label class="flabel">License Plate</label><input type="text" id="vm-plate" placeholder="e.g. TS09AB1234">
+        <div class="macts">
+            <button class="btn btn-g" onclick="closeM('veh-modal')">Cancel</button>
+            <button class="btn btn-d btn-auto" id="vm-del" style="display:none" onclick="deleteVeh()">Delete</button>
+            <button class="btn btn-auto" onclick="saveVeh()" style="background:var(--green);color:#000;font-weight:700">Save Vehicle</button>
+        </div>
+    </div>
+</div>
+
+<!-- BUG-06 FIX: Custom confirm replaces window.confirm() -->
+<div class="modal" id="cfm-modal">
+    <div class="mbox" style="text-align:center;max-width:360px">
+        <div id="cfm-icon" style="font-size:40px;margin-bottom:12px">⚠️</div>
+        <div id="cfm-title" class="mtitle" style="justify-content:center;display:flex"></div>
+        <p id="cfm-msg" style="font-size:14px;color:var(--muted);margin-bottom:6px"></p>
+        <div class="macts" style="justify-content:center">
+            <button class="btn btn-g" id="cfm-no" style="flex:1">Cancel</button>
+            <button class="btn" id="cfm-ok" style="flex:1">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<nav id="bnav">
+    <div class="ni on" id="ni-entry" onclick="navTo('entry')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
         <span>Entry</span>
     </div>
-    <div class="mob-nav-item" id="nav-history" onclick="navTo('history')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+    <div class="ni" id="ni-history" onclick="navTo('history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
         <span>History</span>
     </div>
-    <div class="mob-nav-item" id="nav-dashboard" onclick="navTo('dashboard')">
+    <div class="ni" id="ni-dashboard" onclick="navTo('dashboard')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         <span>Dashboard</span>
     </div>
-    <div class="mob-nav-item" id="nav-admin" onclick="navTo('admin')">
+    <div class="ni hid" id="ni-admin" onclick="navTo('admin')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         <span>Admin</span>
     </div>
 </nav>
-
-<button id="scrollToTopBtn" onclick="scrollToTop()" title="Go to top">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+<button id="stb" onclick="sTop()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 
 <script>
-    const GOOGLE_API_URL = "https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
+const API = "https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
+const PG  = 30;
+let CU = {username:'',role:'',token:''}, gPrice=0, gSet={}, gVeh=[], gHist=[];
+let hPage=0, chM, chS, chU;
+let tQ=[], tOn=false;
 
-    let currentUser = { username:'', role:'', token:'' };
-    let toastQueue = []; let isToastShowing = false;
-    let globalFuelPrice = 0;
-    let globalSettings = {}; 
-    let globalVehicles = [], globalHistory = [];
-    let mileageChart, spendChart, userChart; 
+// TOAST
+function toast(msg,type='ok'){tQ.push({msg,type});runTQ()}
+function runTQ(){
+    if(tOn||!tQ.length)return; tOn=true;
+    const {msg,type}=tQ.shift(), el=document.getElementById('toast');
+    document.getElementById('toast-msg').innerText=msg;
+    document.getElementById('t-icon').innerText=type==='ok'?'✓':'✕';
+    el.className=type==='ok'?'':'err'; el.classList.add('show');
+    setTimeout(()=>{el.classList.remove('show');setTimeout(()=>{tOn=false;runTQ()},350)},3000);
+}
 
-    function showToast(msg, type='success') { toastQueue.push({msg, type}); processToastQueue(); }
-    function processToastQueue() {
-        if(isToastShowing || toastQueue.length===0) return;
-        isToastShowing = true; const {msg, type} = toastQueue.shift();
-        const t = document.getElementById('toast');
-        document.getElementById('toast-msg').innerText = msg;
-        t.className = ''; if(type==='error') t.classList.add('toast-error');
-        t.classList.add('show');
-        setTimeout(() => { t.classList.remove('show'); setTimeout(()=>{isToastShowing=false; processToastQueue();}, 400); }, 3000);
+// LOADER
+const LC={refresh:{m:'Refreshing Data…',s:'Fetching records from Sheets'},logging:{m:'Logging Transaction…',s:'Acquiring write lock'},def:{m:'Processing…',s:'Please wait'}};
+function showL(t='def'){const c=LC[t]||LC.def;document.getElementById('l-msg').innerText=c.m;document.getElementById('l-sub').innerText=c.s;document.getElementById('loader').style.display='flex'}
+function hideL(){document.getElementById('loader').style.display='none'}
+
+// CONFIRM (BUG-06)
+function confirm2(title,msg,ok='Confirm',danger=false,icon='⚠️'){
+    return new Promise(res=>{
+        document.getElementById('cfm-icon').innerText=icon;
+        document.getElementById('cfm-title').innerText=title;
+        document.getElementById('cfm-msg').innerText=msg;
+        const ob=document.getElementById('cfm-ok');
+        ob.innerText=ok; ob.className='btn'+(danger?' btn-d':' btn-p');
+        ob.style=danger?'flex:1;background:var(--danger);color:#fff':'flex:1';
+        document.getElementById('cfm-modal').style.display='flex';
+        const done=v=>{document.getElementById('cfm-modal').style.display='none';ob.onclick=null;document.getElementById('cfm-no').onclick=null;res(v)};
+        ob.onclick=()=>done(true); document.getElementById('cfm-no').onclick=()=>done(false);
+    });
+}
+function closeM(id){document.getElementById(id).style.display='none'}
+
+// NAV
+function navTo(t){
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+    document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+    document.getElementById('view-'+t).classList.add('on');
+    document.getElementById('ni-'+t).classList.add('on');
+    sTop();
+    if(t==='dashboard')setTimeout(renderDash,80);
+    if(t==='admin'){fetchUsers();fetchVehs()}
+    if(t==='history'){hPage=0;renderHist()}
+}
+function switchTab(t){
+    document.querySelectorAll('.atab').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.apanel').forEach(x=>x.classList.remove('on'));
+    document.getElementById('at-'+t).classList.add('on');
+    document.getElementById('ap-'+t).classList.add('on');
+}
+const APP=document.getElementById('APP');
+APP.addEventListener('scroll',()=>{document.getElementById('stb').style.display=APP.scrollTop>200?'flex':'none'});
+function sTop(){APP.scrollTo({top:0,behavior:'smooth'})}
+
+// API
+async function api(payload){
+    if(payload.action!=='login'&&CU.token){payload._token=CU.token;payload._u=CU.username}
+    try{
+        const r=await fetch(API,{method:'POST',body:JSON.stringify(payload)});
+        const d=await r.json();
+        if(d.status==='error'&&d.message?.includes('expired')){toast('Session expired. Logging out.','err');setTimeout(logout,1500)}
+        else if(CU.token&&d.status!=='error'){const s=localStorage.getItem('ft_u');if(s){const p=JSON.parse(s);p.e=Date.now()+(5.5*3600000);localStorage.setItem('ft_u',JSON.stringify(p))}}
+        return d;
+    }catch(e){
+        if(payload.action==='logEntry'){let q=JSON.parse(localStorage.getItem('ft_q')||'[]');q.push({payload,ts:Date.now()});localStorage.setItem('ft_q',JSON.stringify(q));toast('Offline — entry staged.','err');return{status:'offline_staged'}}
+        return{status:'error',message:'Network unavailable.'}
     }
-    
-    // EXPLICIT STEP-BY-STEP OVERLAY MESSAGE ROUTINES
-    const GL_CONFIGS = {
-        refresh: { msg: 'Refreshing System Grid…', sub: 'Fetching records from spreadsheet service' },
-        logging: { msg: 'Logging Transaction…',    sub: 'Acquiring atomic operational locks' },
-        excel:   { msg: 'Compiling Analytics…',    sub: 'Rendering tracking dashboards' },
-        default: { msg: 'Please wait…',             sub: 'Processing request configuration' }
+}
+
+// OFFLINE SYNC
+async function syncQ(){
+    const q=JSON.parse(localStorage.getItem('ft_q')||'[]');if(!q.length)return;
+    showL('refresh');const ok=[];
+    for(const item of q){try{const r=await fetch(API,{method:'POST',body:JSON.stringify(item.payload)});const d=await r.json();if(d.status==='success')ok.push(item.ts)}catch{break}}
+    const rem=q.filter(i=>!ok.includes(i.ts));
+    if(rem.length){localStorage.setItem('ft_q',JSON.stringify(rem));toast(rem.length+' items pending sync.','err')}
+    else{localStorage.removeItem('ft_q');if(ok.length)toast(ok.length+' offline entries synced!')}
+    hideL();fetchInit();
+}
+window.addEventListener('online',syncQ);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine)syncQ()});
+
+// AUTH
+async function doLogin(){
+    const u=document.getElementById('l-user').value.trim(),p=document.getElementById('l-pass').value.trim();if(!u||!p)return;
+    document.getElementById('l-btn').disabled=true;showL();
+    const r=await api({action:'login',username:u,password:p});hideL();document.getElementById('l-btn').disabled=false;
+    if(r.status==='success'){localStorage.setItem('ft_u',JSON.stringify({username:r.username,role:r.role,token:r.token,e:Date.now()+(5.5*3600000)}));boot()}
+    else document.getElementById('l-err').innerText=r.message;
+}
+function logout(){localStorage.removeItem('ft_u');location.reload()}
+function boot(){
+    const raw=localStorage.getItem('ft_u');if(!raw)return;
+    const p=JSON.parse(raw);if(Date.now()>p.e)return logout();
+    CU=p;document.body.classList.add('on');document.getElementById('d-user').innerText=p.username;
+    if(p.role==='Admin')document.getElementById('ni-admin').classList.remove('hid');
+    navTo('entry');fetchInit();setTimeout(syncQ,2000);
+    if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
+}
+
+// INIT DATA
+async function fetchInit(ref=false){
+    if(ref)showL('refresh');
+    const r=await api({action:'getInitData'});if(ref)hideL();if(r.status!=='success')return;
+    gPrice=parseFloat(r.currentPrice)||0;gSet=r.settings||{};gVeh=r.vehicles;gHist=r.history;
+    document.getElementById('d-price').innerText=gPrice.toFixed(2);
+    const sv=localStorage.getItem('ft_veh'),sel=document.getElementById('ev'),pv=sel.value;
+    sel.innerHTML=gVeh.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+    if(sv&&gVeh.some(v=>v.id===sv))sel.value=sv;else if(pv&&gVeh.some(v=>v.id===pv))sel.value=pv;
+    renderHist();if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
+}
+
+// ENTRY
+function setType(t){
+    document.getElementById('e-type').value=t;
+    document.getElementById('bt-f').className='tbtn'+(t==='FUELING'?' fuel':'');
+    document.getElementById('bt-r').className='tbtn'+(t==='RESERVE'?' res':'');
+    document.getElementById('fuel-fields').style.display=t==='FUELING'?'block':'none';
+}
+document.getElementById('e-amt').addEventListener('input',e=>{
+    const a=parseFloat(e.target.value)||0,est=gPrice>0?(a/gPrice).toFixed(2):'0.00';
+    document.getElementById('live-est').innerHTML=`Estimated: <strong style="color:var(--accent)">${est} L</strong> (at ₹<span id="d-price">${gPrice.toFixed(2)}</span>/L)`;
+});
+// BUG-12 FIX: listener outside startApp
+document.getElementById('ev').addEventListener('change',e=>{
+    localStorage.setItem('ft_veh',e.target.value);renderHist();
+    if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
+});
+async function submitEntry(){
+    const t=document.getElementById('e-type').value,v=document.getElementById('ev').value;
+    const o=document.getElementById('e-odo').value,a=document.getElementById('e-amt').value;
+    if(!v||!o||(t==='FUELING'&&!a))return toast('Fill all fields.','err');
+    showL('logging');
+    const r=await api({action:'logEntry',vehicleId:v,logType:t,odoReading:parseFloat(o),amountPaid:t==='FUELING'?parseFloat(a):0});
+    hideL();
+    if(r.status==='success'){toast(r.message);document.getElementById('e-odo').value='';document.getElementById('e-amt').value='';fetchInit()}
+    else if(r.status!=='offline_staged')toast(r.message,'err');
+    else{document.getElementById('e-odo').value='';document.getElementById('e-amt').value=''}
+}
+
+// HISTORY + PAGINATION
+function renderHist(){
+    const v=document.getElementById('ev').value;
+    const f=gHist.filter(h=>!v||h.vehicleId===v);
+    const total=f.length,tp=Math.ceil(total/PG);
+    if(hPage>=tp)hPage=Math.max(0,tp-1);
+    document.getElementById('h-count').innerText=total?total+' entries':'';
+    const slice=f.slice(hPage*PG,(hPage+1)*PG);
+    let html='';
+    slice.forEach(h=>{
+        const f2=h.logType==='FUELING',c=f2?'var(--accent)':'var(--amber)',ico=f2?'⛽':'⚠️';
+        const desc=f2?`₹${parseFloat(h.amount).toFixed(2)} · ${parseFloat(h.liters).toFixed(2)} L`:'Reserve Hit';
+        html+=`<div class="log-card" style="--lc:${c}"><button class="epill" onclick="openEdit('${h.logId}')">Edit</button><div class="log-meta">${h.date} · ${h.time} · <strong style="color:var(--muted)">${h.loggedBy}</strong></div><div class="log-odo">${ico} ${parseFloat(h.odo).toLocaleString()} km</div><div class="log-desc">${desc}</div></div>`;
+    });
+    document.getElementById('h-list').innerHTML=html||'<p style="text-align:center;color:var(--muted);padding:32px 0;font-size:13px">No logs found.</p>';
+    let pg='';
+    if(tp>1){
+        pg+=`<button class="pbtn" onclick="pg(${hPage-1})" ${hPage===0?'disabled':''}>← Prev</button>`;
+        for(let i=0;i<tp;i++){
+            if(tp<=7||Math.abs(i-hPage)<=2||i===0||i===tp-1)pg+=`<button class="pbtn${i===hPage?' on':''}" onclick="pg(${i})">${i+1}</button>`;
+            else if(Math.abs(i-hPage)===3)pg+=`<span style="color:var(--dim);padding:0 4px">…</span>`;
+        }
+        pg+=`<button class="pbtn" onclick="pg(${hPage+1})" ${hPage>=tp-1?'disabled':''}>Next →</button>`;
+    }
+    document.getElementById('h-pgn').innerHTML=pg;
+}
+function pg(p){hPage=p;renderHist();sTop()}
+
+// EDIT
+function openEdit(id){
+    const h=gHist.find(x=>x.logId===id);if(!h)return;
+    document.getElementById('m-edit-id').value=id;document.getElementById('m-edit-type').value=h.logType;
+    document.getElementById('m-edit-odo').value=h.odo;
+    const al=document.getElementById('m-edit-amt-lbl'),af=document.getElementById('m-edit-amt');
+    if(h.logType==='FUELING'){af.value=h.amount;af.disabled=false;al.style.display='block';af.style.display='block'}
+    else{af.value='';af.disabled=true;al.style.display='none';af.style.display='none'}
+    document.getElementById('edit-modal').style.display='flex';
+}
+async function saveEdit(){
+    const id=document.getElementById('m-edit-id').value,o=document.getElementById('m-edit-odo').value,a=document.getElementById('m-edit-amt').value;
+    showL('logging');const r=await api({action:'editEntry',logId:id,odoReading:parseFloat(o),amountPaid:a?parseFloat(a):0});
+    hideL();closeM('edit-modal');
+    if(r.status==='success'){toast('Record updated.');fetchInit()}else toast(r.message,'err');
+}
+
+// PRICE
+function openPriceModal(){document.getElementById('m-price').value=gPrice.toFixed(2);document.getElementById('price-modal').style.display='flex'}
+async function updatePrice(){
+    const np=document.getElementById('m-price').value;if(!np)return;
+    showL('logging');const r=await api({action:'updatePrice',newPrice:parseFloat(np)});
+    hideL();closeM('price-modal');
+    if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
+}
+
+// DASHBOARD
+function renderDash(){
+    const v=document.getElementById('ev').value;
+    const vl=gHist.filter(h=>h.vehicleId===v),fl=vl.filter(h=>h.logType==='FUELING');
+    const spent=fl.reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
+    const lit=fl.reduce((s,f)=>s+(parseFloat(f.liters)||0),0);
+    anim('s-spent',spent,'₹','',true);anim('s-liters',lit,'',  ' L',false);
+    anim('s-logs',vl.length,'','',false);document.getElementById('s-price').innerText='₹'+gPrice.toFixed(2);
+    calcMileage(v,vl);renderMaint(v,vl);renderMileHist(v,vl);renderCharts(v,vl,fl);
+}
+
+function anim(id,target,pre,suf,cur){
+    const el=document.getElementById(id);if(!el)return;
+    const s=performance.now(),d=900,tick=now=>{
+        const t=Math.min((now-s)/d,1),e=1-Math.pow(1-t,3),val=e*target;
+        el.innerText=pre+(cur?Math.floor(val).toLocaleString('en-IN'):Math.floor(val).toLocaleString('en-IN'))+suf;
+        if(t<1)requestAnimationFrame(tick);
+        else el.innerText=pre+(cur?target.toLocaleString('en-IN',{maximumFractionDigits:2}):target.toFixed(suf===' L'?2:0))+suf;
+    };requestAnimationFrame(tick);
+}
+
+function calcMileage(v,vl){
+    const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
+    const km=document.getElementById('dash-km'),sub=document.getElementById('dash-sub');
+    if(res.length<2){km.className='';km.innerText='-- km/L';sub.innerText='Need 2+ Reserve logs.';setGauge(0,'#1a1a28');return}
+    const end=res[res.length-1],start=res[res.length-2];
+    const dist=parseFloat(end.odo)-parseFloat(start.odo);
+    let fuel=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>parseFloat(start.odo)&&parseFloat(h.odo)<=parseFloat(end.odo))fuel+=parseFloat(h.liters)||0});
+    if(fuel>0&&dist>0){
+        const k=dist/fuel;km.innerText=k.toFixed(1)+' km/L';
+        km.className=k>=45?'good':k>=32?'warn':'poor';
+        sub.innerText=dist.toFixed(0)+' km · '+fuel.toFixed(2)+' L · last segment';
+        setGauge(Math.min(100,(k/60)*100),k>=45?'#10b981':k>=32?'#f59e0b':'#ef4444');
+    }else{km.className='';km.innerText='-- km/L';sub.innerText='No fueling between reserve logs.';setGauge(0,'#1a1a28')}
+}
+
+function setGauge(pct,color){
+    const glow=color==='#1a1a28'?'transparent':color==='#10b981'?'rgba(16,185,129,0.2)':color==='#f59e0b'?'rgba(245,158,11,0.2)':'rgba(239,68,68,0.2)';
+    const deg=(pct/100)*360,r=document.getElementById('g-ring');
+    r.style.background=`conic-gradient(${color} 0deg,${color} ${deg}deg,#1a1a28 ${deg}deg)`;
+    r.style.boxShadow=`0 0 22px ${glow}`;
+    document.getElementById('g-pct').innerText=Math.round(pct)+'%';
+}
+
+function renderMaint(v,vl){
+    if(!v||!vl.length)return;
+    const odo=Math.max(...vl.map(h=>parseFloat(h.odo)||0));
+    const lube=parseFloat(gSet[`LAST_LUBE_ODO_${v}`]||gSet['LAST_LUBE_ODO']||0);
+    const oil=parseFloat(gSet[`LAST_OIL_ODO_${v}`]||gSet['LAST_OIL_ODO']||0);
+    const ld=Math.max(0,odo-lube),od=Math.max(0,odo-oil);
+    const lp=Math.min(100,(ld/500)*100),op=Math.min(100,(od/3000)*100);
+    const c=p=>p>=100?'var(--danger)':p>=80?'var(--amber)':'var(--green)';
+    document.getElementById('maint-area').innerHTML=`<div class="maint-grid">${mc('⛓️ Chain Lube','500 km',ld,lp,c(lp),odo,v,'LUBE')}${mc('🛢️ Engine Oil','3,000 km',od,op,c(op),odo,v,'OIL')}</div>`;
+}
+function mc(lbl,int,diff,pct,col,odo,v,t){
+    return`<div class="maint-card"><div class="maint-hdr"><div><p style="font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${lbl} · Every ${int}</p><p style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:${col}">${Math.round(diff).toLocaleString()} <span style="font-size:12px;font-weight:400;color:var(--muted)">km since last</span></p></div><button class="btn btn-g btn-sm" onclick="markSvc('${t}',${odo},'${v}')">Mark Done</button></div><div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+}
+async function markSvc(t,odo,v){
+    const lbl=t==='LUBE'?'Chain Lube':'Engine Oil';
+    const ok=await confirm2(`Mark ${lbl} Done?`,`Log service at ${odo.toLocaleString()} km?`,'Mark Done',false,t==='LUBE'?'⛓️':'🛢️');
+    if(!ok)return;showL();const r=await api({action:'updateService',serviceType:t,odoVal:odo,vehicleId:v});hideL();
+    if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
+}
+
+// MILEAGE HISTORY TABLE
+function renderMileHist(v,vl){
+    const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
+    const area=document.getElementById('mh-area');
+    if(res.length<2){area.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs to compute segments.</p>';return}
+    const segs=[];
+    for(let i=1;i<res.length;i++){
+        const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
+        let fuel=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>parseFloat(s.odo)&&parseFloat(h.odo)<=parseFloat(e.odo))fuel+=parseFloat(h.liters)||0});
+        if(fuel>0&&dist>0)segs.push({date:e.date,dist,fuel,eff:dist/fuel});
+    }
+    if(!segs.length){area.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">No complete segments yet.</p>';return}
+    segs.reverse();
+    const grd=e=>{
+        if(e>=52)return{g:'S', c:'#00eeff',bg:'rgba(0,238,255,0.08)',  b:'rgba(0,238,255,0.2)'};
+        if(e>=45)return{g:'A+',c:'#10b981',bg:'rgba(16,185,129,0.08)', b:'rgba(16,185,129,0.2)'};
+        if(e>=38)return{g:'A', c:'#10b981',bg:'rgba(16,185,129,0.08)', b:'rgba(16,185,129,0.2)'};
+        if(e>=32)return{g:'B', c:'#f59e0b',bg:'rgba(245,158,11,0.08)', b:'rgba(245,158,11,0.2)'};
+        if(e>=26)return{g:'C', c:'#f97316',bg:'rgba(249,115,22,0.08)',  b:'rgba(249,115,22,0.2)'};
+        return           {g:'D', c:'#ef4444',bg:'rgba(239,68,68,0.08)',  b:'rgba(239,68,68,0.2)'};
     };
-    function showLoader(type = 'default') { 
-        const cfg = GL_CONFIGS[type] || GL_CONFIGS.default;
-        document.getElementById('gl-msg').innerText = cfg.msg;
-        document.getElementById('gl-sub').innerText = cfg.sub;
-        document.getElementById('global-loader').style.display = 'flex'; 
-    }
-    function hideLoader() { document.getElementById('global-loader').style.display = 'none'; }
+    const best=Math.max(...segs.map(s=>s.eff)),worst=Math.min(...segs.map(s=>s.eff)),avg=segs.reduce((a,s)=>a+s.eff,0)/segs.length;
+    let rows='';
+    segs.forEach((seg,i)=>{const{g,c,bg,b}=grd(seg.eff);rows+=`<tr><td style="color:var(--dim);font-size:12px">${i+1}</td><td style="color:var(--text);font-size:13px">${seg.date}</td><td class="r" style="color:var(--text);font-weight:600">${Math.round(seg.dist).toLocaleString()} km</td><td class="r">${seg.fuel.toFixed(2)} L</td><td class="r"><span class="eff-val" style="color:${c}">${seg.eff.toFixed(1)}</span></td><td class="c"><span class="gbadge" style="color:${c};background:${bg};border-color:${b}">${g}</span></td></tr>`;});
+    area.innerHTML=`<div class="mini-stats"><div class="mini-stat"><div class="mini-stat-l">Best</div><div class="mini-stat-v" style="color:#10b981">${best.toFixed(1)} km/L</div></div><div class="mini-stat"><div class="mini-stat-l">Average</div><div class="mini-stat-v" style="color:var(--accent)">${avg.toFixed(1)} km/L</div></div><div class="mini-stat"><div class="mini-stat-l">Worst</div><div class="mini-stat-v" style="color:var(--amber)">${worst.toFixed(1)} km/L</div></div></div><div class="mh-wrap"><table class="mh-table"><thead><tr><th>#</th><th>Date</th><th class="r">Distance</th><th class="r">Fuel</th><th class="r">km/L</th><th class="c">Grade</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
 
-    function navTo(tabId) {
-        document.querySelectorAll('.view-section').forEach(v=>v.classList.remove('active'));
-        document.getElementById('view-'+tabId).classList.add('active');
-        document.querySelectorAll('.mob-nav-item').forEach(i=>i.classList.remove('active'));
-        document.getElementById('nav-'+tabId).classList.add('active');
-        scrollToTop();
-        if(tabId === 'admin' && currentUser.role === 'Admin') fetchUsers();
-        if(tabId === 'dashboard') setTimeout(renderCharts, 100);
-    }
+// CHARTS — BUG-05 FIX: chronological sort
+function renderCharts(v,vl,fl){
+    if(!window.ApexCharts)return;
+    if(!vl.length){['ch-mileage','ch-spend','ch-user'].forEach(id=>{document.getElementById(id).innerHTML='<p style="padding:32px;text-align:center;color:var(--muted);font-size:13px">No data yet.</p>'});return}
+    const base={chart:{background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:700}},theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,0.04)',strokeDashArray:4},tooltip:{theme:'dark'},xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}},yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}}};
+    const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
+    const md=[];
+    for(let i=1;i<res.length;i++){const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);let f=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>parseFloat(s.odo)&&parseFloat(h.odo)<=parseFloat(e.odo))f+=parseFloat(h.liters)||0});if(f>0)md.push({x:e.date.slice(0,5),y:parseFloat((dist/f).toFixed(1))})}
+    if(chM)chM.destroy();
+    chM=new ApexCharts(document.getElementById('ch-mileage'),{...base,series:[{name:'km/L',data:md}],chart:{...base.chart,type:'area',height:200},colors:['#00eeff'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},stroke:{curve:'smooth',width:2.5},markers:{size:md.length<=10?4:0,colors:['#00eeff'],strokeWidth:0},dataLabels:{enabled:false}});chM.render();
 
-    const appContainer = document.getElementById('main-app');
-    appContainer.addEventListener('scroll', function() {
-        const btn = document.getElementById('scrollToTopBtn');
-        if (this.scrollTop > 200) btn.style.display = 'flex';
-        else btn.style.display = 'none';
-    });
-    function scrollToTop() { appContainer.scrollTo({ top: 0, behavior: 'smooth' }); }
+    // BUG-05 FIX: sort by YYYYMM not by insertion order
+    const sm={};
+    fl.forEach(h=>{const p=h.date.split('-');if(p.length===3){const k=`${p[1]}/${p[2].slice(-2)}`,sk=`${p[2]}${p[1]}`;if(!sm[k])sm[k]={v:0,s:sk};sm[k].v+=parseFloat(h.amount)||0}});
+    const sorted=Object.entries(sm).sort((a,b)=>a[1].s.localeCompare(b[1].s));
+    const sCats=sorted.map(([k])=>k),sVals=sorted.map(([,v])=>parseFloat(v.v.toFixed(2)));
+    if(chS)chS.destroy();
+    chS=new ApexCharts(document.getElementById('ch-spend'),{...base,colors:['#10b981'],series:[{name:'₹ Spend',data:sVals}],chart:{...base.chart,type:'bar',height:200},plotOptions:{bar:{borderRadius:5,columnWidth:'50%'}},dataLabels:{enabled:false},xaxis:{...base.xaxis,categories:sCats}});chS.render();
 
-    // DYNAMIC TRANSMISSION INTERCEPTOR (With Sliding-Window Lifespans)
-    async function callGoogleAPI(payload) {
-        if (payload.action !== 'login' && currentUser.token) { 
-            payload._token = currentUser.token; 
-            payload._u = currentUser.username; 
-        }
-        try {
-            const res = await fetch(GOOGLE_API_URL, { method:'POST', body:JSON.stringify(payload) });
-            const data = await res.json();
-            if(data.status==='error' && data.message.includes('expired')) { 
-                showToast('Session expired.', 'error'); logout(); 
-            } else if (currentUser.token && data.status !== 'error') {
-                const saved = localStorage.getItem('ft_user');
-                if (saved) {
-                    const p = JSON.parse(saved);
-                    p.expires = Date.now() + (5.5 * 3600000); // Push sliding window lifespan 5.5 hours forward
-                    localStorage.setItem('ft_user', JSON.stringify(p));
-                }
-            }
-            return data;
-        } catch(e) { 
-            if (payload.action === 'logEntry') {
-                let queue = JSON.parse(localStorage.getItem('offline_fuel_queue')) || [];
-                queue.push({ payload, timestamp: Date.now() });
-                localStorage.setItem('offline_fuel_queue', JSON.stringify(queue));
-                showToast('Network offline. Record staged locally for background sync loop.', 'error');
-                return { status: 'offline_staged' };
-            }
-            return {status:'error', message:'Network connectivity link is down.'}; 
-        }
-    }
+    const um={};fl.forEach(h=>{if(!um[h.loggedBy])um[h.loggedBy]=0;um[h.loggedBy]+=parseFloat(h.amount)||0});
+    if(chU)chU.destroy();
+    chU=new ApexCharts(document.getElementById('ch-user'),{...base,colors:['#00eeff','#10b981','#f59e0b','#a855f7','#ef4444'],series:Object.values(um).map(v=>parseFloat(v.toFixed(2))),labels:Object.keys(um),chart:{...base.chart,type:'donut',height:240},stroke:{colors:['#09090b'],width:2},plotOptions:{pie:{donut:{size:'68%',labels:{show:true,total:{show:true,label:'Total',color:'#8b8b99',fontSize:'12px',formatter:w=>'₹'+w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString('en-IN',{maximumFractionDigits:0})}}}}},dataLabels:{enabled:false},legend:{position:'bottom',labels:{colors:'#8b8b99'},fontSize:'12px'}});chU.render();
+}
 
-    // FINE-GRAINED INDIVIDUAL QUEUE SYNCHRONIZATION 
-    async function syncOfflineQueue() {
-        let queue = JSON.parse(localStorage.getItem('offline_fuel_queue')) || [];
-        if (queue.length === 0) return;
-        
-        showLoader('refresh');
-        let successfullyProcessedIds = [];
-        
-        for(let i = 0; i < queue.length; i++) {
-            const item = queue[i];
-            try {
-                const res = await fetch(GOOGLE_API_URL, { method:'POST', body:JSON.stringify(item.payload) });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    successfullyProcessedIds.push(item.timestamp);
-                }
-            } catch(err) {
-                console.warn('Sync loop interrupted by connection dropout.', err);
-                break; // Stop sync attempts for remaining items to protect data
-            }
-        }
-        
-        // Remove only verified processed entries from the array
-        let remainingQueue = queue.filter(item => !successfullyProcessedIds.includes(item.timestamp));
-        if (remainingQueue.length > 0) {
-            localStorage.setItem('offline_fuel_queue', JSON.stringify(remainingQueue));
-            showToast(`Staged ${remainingQueue.length} items for subsequent validation window.`, 'error');
-        } else {
-            localStorage.removeItem('offline_fuel_queue');
-            showToast('All transaction items synchronized successfully!');
-        }
-        hideLoader();
-        fetchInitData();
-    }
+// ADMIN USERS
+async function fetchUsers(){
+    document.getElementById('user-list').innerHTML='<p style="color:var(--muted);font-size:13px">Loading...</p>';
+    const r=await api({action:'getUsers'});if(r.status!=='success'){document.getElementById('user-list').innerHTML=`<p style="color:var(--danger);font-size:13px">${r.message}</p>`;return}
+    let html='';r.users.forEach(u=>{html+=`<div class="vrow"><div><div style="font-weight:700;font-size:14px;color:var(--text)">${u.username}</div><span class="badge ${u.role==='Admin'?'':'badge-a'}" style="margin-top:4px;display:inline-block">${u.role}</span></div><button class="btn btn-g btn-sm" onclick="openUserModal('${u.rowIdx}','${u.username}','${u.role}')">Edit</button></div>`});
+    document.getElementById('user-list').innerHTML=html||'<p style="color:var(--muted);font-size:13px">No users found.</p>';
+}
+function openUserModal(row='',name='',role='User'){
+    document.getElementById('um-row').value=row;document.getElementById('um-orig').value=name;
+    document.getElementById('um-name').value=name;document.getElementById('um-role').value=role;
+    document.getElementById('um-pass').value='';
+    document.getElementById('um-title').innerText=row?'Edit User':'Add New User';
+    document.getElementById('um-del').style.display=row?'block':'none';
+    document.getElementById('user-modal').style.display='flex';
+}
+async function saveUser(){
+    const row=document.getElementById('um-row').value,name=document.getElementById('um-name').value.trim();
+    const role=document.getElementById('um-role').value,pass=document.getElementById('um-pass').value;
+    if(!name)return toast('Username required.','err');
+    showL();const r=await api({action:'saveUser',rowIdx:row,username:name,role,password:pass});hideL();closeM('user-modal');
+    if(r.status==='success'){toast('User saved.');fetchUsers()}else toast(r.message,'err');
+}
+async function deleteUser(){
+    const name=document.getElementById('um-orig').value;
+    const ok=await confirm2('Delete User?',`Permanently delete "${name}"?`,'Delete',true,'🗑️');if(!ok)return;
+    showL();const r=await api({action:'deleteUser',targetUsername:name});hideL();closeM('user-modal');
+    if(r.status==='success'){toast(r.message);fetchUsers()}else toast(r.message,'err');
+}
 
-    // iOS Safari network event listener fallbacks
-    window.addEventListener('online', syncOfflineQueue);
-    document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible' && navigator.onLine) syncOfflineQueue();
-    });
+// ADMIN VEHICLES
+async function fetchVehs(){
+    document.getElementById('veh-list').innerHTML='<p style="color:var(--muted);font-size:13px">Loading...</p>';
+    const r=await api({action:'getVehiclesMgmt'});if(r.status!=='success'){document.getElementById('veh-list').innerHTML=`<p style="color:var(--danger);font-size:13px">${r.message}</p>`;return}
+    let html='';r.vehicles.forEach(v=>{html+=`<div class="vrow"><div><div style="font-weight:700;font-size:14px;color:var(--text)">${v.name}</div><div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap"><span class="badge ${v.type==='Car'?'badge-p':''}">${v.type||'Vehicle'}</span>${v.plate?`<span class="badge" style="color:var(--muted);border-color:var(--border)">${v.plate}</span>`:''}<span style="font-size:11px;color:var(--dim)">${v.vehicleId}</span></div></div><button class="btn btn-g btn-sm" onclick="openVehModal('${v.vehicleId}','${v.name.replace(/'/g,"\\'")}','${v.type}','${v.plate}')">Edit</button></div>`});
+    document.getElementById('veh-list').innerHTML=html||'<p style="color:var(--muted);font-size:13px">No vehicles found.</p>';
+}
+function openVehModal(id='',name='',type='Bike',plate=''){
+    document.getElementById('vm-id').value=id;document.getElementById('vm-name').value=name;
+    document.getElementById('vm-type').value=type||'Bike';document.getElementById('vm-plate').value=plate;
+    document.getElementById('vm-title').innerText=id?'Edit Vehicle':'Add Vehicle';
+    document.getElementById('vm-del').style.display=id?'block':'none';
+    document.getElementById('veh-modal').style.display='flex';
+}
+async function saveVeh(){
+    const id=document.getElementById('vm-id').value,name=document.getElementById('vm-name').value.trim();
+    const type=document.getElementById('vm-type').value,plate=document.getElementById('vm-plate').value.trim();
+    if(!name)return toast('Vehicle name required.','err');
+    showL();const r=await api({action:'saveVehicle',vehicleId:id,name,type,licensePlate:plate});hideL();closeM('veh-modal');
+    if(r.status==='success'){toast(r.message);fetchVehs();fetchInit()}else toast(r.message,'err');
+}
+async function deleteVeh(){
+    const id=document.getElementById('vm-id').value,name=document.getElementById('vm-name').value;
+    const ok=await confirm2('Delete Vehicle?',`Permanently delete "${name}"? Existing logs are kept.`,'Delete',true,'🚗');if(!ok)return;
+    showL();const r=await api({action:'deleteVehicle',vehicleId:id});hideL();closeM('veh-modal');
+    if(r.status==='success'){toast(r.message);fetchVehs();fetchInit()}else toast(r.message,'err');
+}
 
-    async function handleLogin() {
-        const u = document.getElementById('login-user').value.trim(), p = document.getElementById('login-pass').value.trim();
-        if(!u||!p) return;
-        document.getElementById('btn-login-submit').disabled=true; showLoader('default');
-        const res = await callGoogleAPI({action:'login', username:u, password:p});
-        hideLoader(); document.getElementById('btn-login-submit').disabled=false;
-        if(res.status==='success') {
-            localStorage.setItem('ft_user', JSON.stringify({username:res.username, role:res.role, token:res.token, expires:Date.now()+(5.5*3600000)}));
-            startApp();
-        } else { document.getElementById('login-msg').innerText = res.message; }
-    }
-    function logout() { localStorage.removeItem('ft_user'); location.reload(); }
-
-    function startApp() {
-        const saved = localStorage.getItem('ft_user');
-        if(saved) {
-            const p = JSON.parse(saved);
-            if(Date.now() > p.expires) return logout();
-            currentUser = p; document.body.classList.add('is-logged-in');
-            document.getElementById('display-user').innerText = `${p.username}`;
-            if(p.role !== 'Admin') document.getElementById('nav-admin').classList.add('hidden');
-            
-            document.getElementById('entry-vehicle').addEventListener('change', () => {
-                calculateMileage(); calculateMaintenance(); renderCharts();
-            });
-
-            navTo('entry'); fetchInitData();
-            setTimeout(syncOfflineQueue, 2000);
-            if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-        }
-    }
-
-    async function fetchInitData(isRefresh = false) {
-        if(isRefresh) showLoader('refresh');
-        const res = await callGoogleAPI({action:'getInitData'});
-        if(isRefresh) hideLoader();
-        if(res.status === 'success') {
-            globalFuelPrice = parseFloat(res.currentPrice) || 0; 
-            globalSettings = res.settings || {};
-            globalVehicles = res.vehicles; 
-            globalHistory = res.history;
-            document.getElementById('display-price').innerText = globalFuelPrice.toFixed(2);
-            
-            const selectV = document.getElementById('entry-vehicle');
-            const prevVal = selectV.value;
-            selectV.innerHTML = globalVehicles.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
-            if(prevVal && globalVehicles.some(v => v.id === prevVal)) selectV.value = prevVal;
-
-            renderHistory(); calculateMileage(); calculateMaintenance();
-            if(document.getElementById('view-dashboard').classList.contains('active')) renderCharts();
-        }
-    }
-
-    function openPriceModal() {
-        document.getElementById('quick-price').value = globalFuelPrice.toFixed(2);
-        document.getElementById('price-modal').style.display = 'flex';
-    }
-
-    document.getElementById('entry-amount').addEventListener('input', (e) => {
-        const amt = parseFloat(e.target.value)||0;
-        document.getElementById('live-liters-calc').innerText = `Estimated: ${(globalFuelPrice>0?amt/globalFuelPrice:0).toFixed(2)} L (at ₹${globalFuelPrice.toFixed(2)}/L)`;
-    });
-
-    function setEntryType(type) {
-        document.getElementById('entry-type').value = type;
-        const bF = document.getElementById('btn-type-fuel'), bR = document.getElementById('btn-type-res'), aC = document.getElementById('entry-amount-container');
-        if(type==='FUELING') {
-            bF.style.background='var(--accent)'; bF.style.color='#000'; bF.style.boxShadow='0 4px 15px rgba(0,238,255,0.25)'; bF.style.border='none';
-            bR.style.background='transparent'; bR.style.color='var(--text-muted)'; bR.style.boxShadow='none'; bR.style.border='1px solid var(--border)';
-            aC.style.display='block';
-        } else {
-            bR.style.background='rgba(245,158,11,0.15)'; bR.style.color='var(--warning)'; bR.style.border='1px solid var(--warning)';
-            bF.style.background='transparent'; bF.style.color='var(--text-muted)'; bF.style.boxShadow='none'; bF.style.border='1px solid var(--border)';
-            aC.style.display='none';
-        }
-    }
-
-    async function submitEntry() {
-        const type = document.getElementById('entry-type').value, vId = document.getElementById('entry-vehicle').value;
-        const odo = document.getElementById('entry-odo').value, amt = document.getElementById('entry-amount').value;
-        if(!vId||!odo||(type==='FUELING'&&!amt)) return showToast('Fill all fields', 'error');
-        showLoader('logging');
-        const res = await callGoogleAPI({action:'logEntry', vehicleId:vId, logType:type, odoReading:parseFloat(odo), amountPaid:type==='FUELING'?parseFloat(amt):0});
-        hideLoader();
-        if(res.status==='success') { 
-            showToast(res.message); document.getElementById('entry-odo').value=''; document.getElementById('entry-amount').value=''; fetchInitData(); 
-        } else if (res.status === 'offline_staged') {
-            document.getElementById('entry-odo').value=''; document.getElementById('entry-amount').value='';
-        } else showToast(res.message, 'error');
-    }
-
-    function renderHistory() {
-        let html = ''; const activeV = document.getElementById('entry-vehicle').value;
-        globalHistory.forEach(h => {
-            if(activeV && h.vehicleId !== activeV) return;
-            const isFuel = h.logType === 'FUELING';
-            const icon = isFuel ? '⛽' : '⚠️';
-            const color = isFuel ? 'var(--accent)' : 'var(--warning)';
-            const desc = isFuel ? `₹${parseFloat(h.amount).toFixed(2)} (${parseFloat(h.liters).toFixed(2)} L)` : 'Reserve Hit';
-            html += `<div class="card" style="border-left-color:${color};"><div class="edit-badge" onclick="openEdit('${h.logId}')">Edit</div>
-            <p style="margin:0 0 6px;font-size:12px;color:var(--text-muted);">${h.date} | ${h.time} | <strong>${h.loggedBy}</strong></p>
-            <h4 style="color:${color};margin-bottom:6px;font-size:18px;">${icon} ${parseFloat(h.odo).toFixed(1)} km</h4><p style="margin:0;font-weight:600;font-size:14px;">${desc}</p></div>`;
-        });
-        document.getElementById('history-list').innerHTML = html || '<p style="padding:16px; text-align:center; color:var(--text-muted);">No logs match the selected vehicle.</p>';
-    }
-
-    function openEdit(id) {
-        const log = globalHistory.find(h => h.logId === id);
-        if(!log) return;
-        document.getElementById('edit-id').value = id;
-        document.getElementById('edit-odo').value = log.odo;
-        document.getElementById('edit-amt').value = log.logType === 'FUELING' ? log.amount : '';
-        document.getElementById('edit-amt').disabled = log.logType !== 'FUELING';
-        document.getElementById('edit-modal').style.display = 'flex';
-    }
-
-    async function saveEdit() {
-        const id = document.getElementById('edit-id').value, odo = document.getElementById('edit-odo').value, amt = document.getElementById('edit-amt').value;
-        showLoader('logging');
-        const res = await callGoogleAPI({action:'editEntry', logId:id, odoReading:parseFloat(odo), amountPaid:amt ? parseFloat(amt) : 0});
-        hideLoader(); document.getElementById('edit-modal').style.display='none';
-        if(res.status==='success') { showToast('Record Updated'); fetchInitData(); } else showToast(res.message, 'error');
-    }
-
-    async function updateFuelPrice() {
-        const np = document.getElementById('quick-price').value;
-        if(!np) return; showLoader('logging');
-        const res = await callGoogleAPI({action:'updatePrice', newPrice:parseFloat(np)});
-        hideLoader(); document.getElementById('price-modal').style.display='none';
-        if(res.status==='success') { showToast('Price Updated'); fetchInitData(); } else showToast(res.message, 'error');
-    }
-
-    function calculateMileage() {
-        const vehicleId = document.getElementById('entry-vehicle').value; if (!vehicleId) return;
-        const vehicleLogs = globalHistory.filter(h => h.vehicleId === vehicleId);
-        const resLogs = vehicleLogs.filter(h => h.logType === 'RESERVE');
-        if(resLogs.length < 2) {
-            document.getElementById('dash-mileage').innerText = "-- km/l";
-            return document.getElementById('dash-mileage-sub').innerText = "Need at least 2 Reserve logs to compute telemetry attributes.";
-        }
-        const endLog = resLogs[0], startLog = resLogs[1];
-        const dist = (parseFloat(endLog.odo) - parseFloat(startLog.odo)).toFixed(1); 
-        
-        let fuelUsed = 0;
-        vehicleLogs.forEach(h => {
-            if(h.logType==='FUELING' && parseFloat(h.rowIdx) > parseFloat(startLog.rowIdx) && parseFloat(h.rowIdx) < parseFloat(endLog.rowIdx)) fuelUsed += parseFloat(h.liters);
-        });
-        
-        if(fuelUsed > 0 && dist > 0) {
-            const mileage = (dist / fuelUsed).toFixed(2);
-            document.getElementById('dash-mileage').innerText = `${mileage} km/l`;
-            document.getElementById('dash-mileage-sub').innerText = `Based on last ${dist}km and ${fuelUsed.toFixed(2)}L`;
-            document.getElementById('dash-mileage').style.color = mileage > 40 ? 'var(--success)' : 'var(--warning)';
-        } else { 
-            document.getElementById('dash-mileage').innerText = "-- km/l";
-            document.getElementById('dash-mileage-sub').innerText = "Insufficient fuel tracking entries logged between reserves."; 
-        }
-    }
-
-    function calculateMaintenance() {
-        if (globalHistory.length === 0) return;
-        const vehicleId = document.getElementById('entry-vehicle').value; if (!vehicleId) return;
-
-        const vehicleLogs = globalHistory.filter(h => h.vehicleId === vehicleId);
-        const currentOdo = vehicleLogs.length > 0 ? Math.max(...vehicleLogs.map(h => parseFloat(h.odo) || 0)) : 0;
-        
-        const lubeKey = `LAST_LUBE_ODO_${vehicleId}`;
-        const oilKey = `LAST_OIL_ODO_${vehicleId}`;
-        
-        const vehicleLastLube = parseFloat(globalSettings[lubeKey]) || parseFloat(globalSettings['LAST_LUBE_ODO']) || 0;
-        const vehicleLastOil = parseFloat(globalSettings[oilKey]) || parseFloat(globalSettings['LAST_OIL_ODO']) || 0;
-
-        const lubeDiff = Math.max(0, currentOdo - vehicleLastLube);
-        const oilDiff = Math.max(0, currentOdo - vehicleLastOil);
-
-        const lubePct = Math.min(100, Math.max(0, (lubeDiff / 500) * 100));
-        const oilPct = Math.min(100, Math.max(0, (oilDiff / 3000) * 100));
-
-        const lubeColor = lubePct >= 100 ? 'var(--danger)' : (lubePct >= 80 ? 'var(--warning)' : 'var(--success)');
-        const oilColor = oilPct >= 100 ? 'var(--danger)' : (oilPct >= 80 ? 'var(--warning)' : 'var(--success)');
-
-        document.getElementById('maintenance-card').innerHTML = `
-            <div class="maintenance-grid">
-                <div style="background: rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
-                        <div>
-                            <p style="margin:0 0 2px; font-size:12px; color:var(--text-muted); font-weight:600;">⛓️ Chain Lube (Every 500 km)</p>
-                            <h4 style="margin:0; font-size:18px; color:${lubeColor};">${lubeDiff.toFixed(0)} <span style="font-size:12px; font-weight:400;">km since last</span></h4>
-                        </div>
-                        <button class="btn-main" style="width:auto; padding:6px 12px; margin:0; font-size:12px; background:transparent; border:1px solid var(--border); color:var(--text-main); box-shadow:none;" onclick="markServiceDone('LUBE', ${currentOdo}, '${vehicleId}')">Mark Done</button>
-                    </div>
-                    <div style="width:100%; background:var(--bg-dark); height:6px; border-radius:3px; overflow:hidden;">
-                        <div style="width:${lubePct}%; background:${lubeColor}; height:100%; border-radius:3px; transition:0.3s;"></div>
-                    </div>
-                </div>
-
-                <div style="background: rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:8px;">
-                        <div>
-                            <p style="margin:0 0 2px; font-size:12px; color:var(--text-muted); font-weight:600;">🛢️ Engine Oil (Every 3,000 km)</p>
-                            <h4 style="margin:0; font-size:18px; color:${oilColor};">${oilDiff.toFixed(0)} <span style="font-size:12px; font-weight:400;">km since last</span></h4>
-                        </div>
-                        <button class="btn-main" style="width:auto; padding:6px 12px; margin:0; font-size:12px; background:transparent; border:1px solid var(--border); color:var(--text-main); box-shadow:none;" onclick="markServiceDone('OIL', ${currentOdo}, '${vehicleId}')">Mark Done</button>
-                    </div>
-                    <div style="width:100%; background:var(--bg-dark); height:6px; border-radius:3px; overflow:hidden;">
-                        <div style="width:${oilPct}%; background:${oilColor}; height:100%; border-radius:3px; transition:0.3s;"></div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    async function markServiceDone(type, currentOdo, vehicleId) {
-        const name = type === 'LUBE' ? 'Chain Lube' : 'Engine Oil';
-        if(!confirm(`Are you sure you want to mark ${name} as done at ${currentOdo} km?`)) return;
-        showLoader('default');
-        const res = await callGoogleAPI({action:'updateService', serviceType: type, odoVal: parseFloat(currentOdo), vehicleId: vehicleId});
-        hideLoader();
-        if(res.status === 'success') { showToast(res.message); fetchInitData(); } else showToast(res.message, 'error');
-    }
-
-    // ── CHARTS GRAPH IMPLEMENTATION ENGINE (With Layout Empty Safeguards) ──
-    function renderCharts() {
-        if(!window.ApexCharts) return;
-        const vehicleId = document.getElementById('entry-vehicle').value;
-        const vehicleLogs = globalHistory.filter(h => h.vehicleId === vehicleId);
-        const fuelLogs = vehicleLogs.filter(h => h.logType === 'FUELING');
-
-        let totalSpent = 0, totalLiters = 0;
-        fuelLogs.forEach(f => { totalSpent += parseFloat(f.amount)||0; totalLiters += parseFloat(f.liters)||0; });
-        document.getElementById('stat-total-spent').innerText = `₹${totalSpent.toLocaleString('en-IN', {maximumFractionDigits:2})}`;
-        document.getElementById('stat-total-liters').innerText = `${totalLiters.toFixed(2)} L`;
-        document.getElementById('stat-total-logs').innerText = vehicleLogs.length;
-        document.getElementById('stat-avg-price').innerText = `₹${globalFuelPrice.toFixed(2)}`;
-
-        if(vehicleLogs.length === 0) {
-            document.querySelector("#mileage-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting entries to generate chart timelines...</p>';
-            document.querySelector("#spend-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting entries to generate spending profiles...</p>';
-            document.querySelector("#user-chart").innerHTML = '<p style="padding:32px;text-align:center;color:var(--text-muted);">Awaiting data assets...</p>';
-            return;
-        }
-
-        const commonOptions = {
-            chart: { background: 'transparent', toolbar: { show: false } },
-            theme: { mode: 'dark' },
-            grid: { borderColor: '#1a1a24', strokeDashArray: 4 },
-            tooltip: { theme: 'dark' }
-        };
-
-        const reserves = vehicleLogs.filter(h => h.logType === 'RESERVE').sort((a,b) => parseFloat(a.odo) - parseFloat(b.odo));
-        let mileageData = [];
-        for(let i=1; i<reserves.length; i++) {
-            const start = reserves[i-1], end = reserves[i];
-            const dist = parseFloat(end.odo) - parseFloat(start.odo);
-            let fuelSum = 0;
-            vehicleLogs.filter(h => h.logType === 'FUELING' && parseFloat(h.odo) > parseFloat(start.odo) && parseFloat(h.odo) <= parseFloat(end.odo)).forEach(f => fuelSum += parseFloat(f.liters));
-            if(fuelSum > 0) { mileageData.push({ x: end.date.substring(0,5), y: parseFloat((dist/fuelSum).toFixed(2)) }); }
-        }
-
-        if(mileageChart) mileageChart.destroy();
-        mileageChart = new ApexCharts(document.querySelector("#mileage-chart"), {
-            ...commonOptions,
-            series: [{ name: 'Mileage (km/l)', data: mileageData }],
-            chart: { type: 'area', height: 220, background: 'transparent', toolbar:{show:false} },
-            colors: ['#00eeff'],
-            dataLabels: { enabled: false },
-            fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05, stops: [0, 100] } },
-            stroke: { curve: 'smooth', width: 3 },
-            xaxis: { type: 'category' }
-        });
-        mileageChart.render();
-
-        let spendMap = {};
-        fuelLogs.forEach(h => {
-            const parts = h.date.split('-'); const month = parts[1] + '/' + parts[2].substring(2);
-            if(!spendMap[month]) spendMap[month] = 0; spendMap[month] += parseFloat(h.amount);
-        });
-        const spendCategories = Object.keys(spendMap).reverse();
-        const spendValues = Object.values(spendMap).reverse();
-
-        if(spendChart) spendChart.destroy();
-        spendChart = new ApexCharts(document.querySelector("#spend-chart"), {
-            ...commonOptions,
-            series: [{ name: 'Spend (₹)', data: spendValues }],
-            chart: { type: 'bar', height: 220, background: 'transparent', toolbar:{show:false} },
-            colors: ['#10b981'],
-            dataLabels: { enabled: false },
-            plotOptions: { bar: { borderRadius: 4, columnWidth: '45%' } },
-            xaxis: { categories: spendCategories }
-        });
-        spendChart.render();
-
-        let userSpendMap = {};
-        fuelLogs.forEach(h => {
-            if(!userSpendMap[h.loggedBy]) userSpendMap[h.loggedBy] = 0; userSpendMap[h.loggedBy] += parseFloat(h.amount);
-        });
-        
-        if(userChart) userChart.destroy();
-        userChart = new ApexCharts(document.querySelector("#user-chart"), {
-            ...commonOptions,
-            series: Object.values(userSpendMap),
-            labels: Object.keys(userSpendMap),
-            chart: { type: 'donut', height: 250, background: 'transparent' },
-            colors: ['#00eeff', '#10b981', '#f59e0b', '#ef4444'],
-            dataLabels: { enabled: false },
-            stroke: { colors: ['#09090b'] },
-            plotOptions: { pie: { donut: { size: '70%' } } }
-        });
-        userChart.render();
-    }
-
-    async function fetchUsers() {
-        document.getElementById('admin-user-list').innerHTML = '<p>Loading users...</p>';
-        const res = await callGoogleAPI({action:'getUsers'});
-        if(res.status === 'success') {
-            let html = '';
-            res.users.forEach(u => {
-                html += `<div class="card"><div class="edit-badge" onclick="openUserModal('${u.rowIdx}', '${u.username}', '${u.role}')">Edit User</div>
-                <h4 style="color:var(--accent); margin-bottom:4px; font-size:18px;">${u.username}</h4><p style="margin:0; font-weight:600;">Role: ${u.role}</p></div>`;
-            });
-            document.getElementById('admin-user-list').innerHTML = html;
-        }
-    }
-
-    function openUserModal(rowIdx='', username='', role='User') {
-        document.getElementById('user-row').value = rowIdx;
-        document.getElementById('user-name').value = username;
-        document.getElementById('user-role').value = role;
-        document.getElementById('user-pass').value = '';
-        document.getElementById('user-modal-title').innerText = rowIdx ? 'Edit User' : 'Add New User';
-        document.getElementById('btn-del-user').style.display = rowIdx ? 'block' : 'none';
-        document.getElementById('user-modal').style.display = 'flex';
-    }
-
-    async function saveUser() {
-        const r = document.getElementById('user-row').value, u = document.getElementById('user-name').value, rl = document.getElementById('user-role').value, p = document.getElementById('user-pass').value;
-        if(!u) return showToast('Username required', 'error');
-        showLoader('default');
-        const res = await callGoogleAPI({action:'saveUser', rowIdx:r, username:u, role:rl, password:p});
-        hideLoader(); document.getElementById('user-modal').style.display='none';
-        if(res.status==='success') { showToast('User Saved'); fetchUsers(); } else showToast(res.message, 'error');
-    }
-
-    async function deleteUser() {
-        if(!confirm('Are you sure you want to completely delete this user?')) return;
-        showLoader('default');
-        const res = await callGoogleAPI({action:'deleteUser', rowIdx:document.getElementById('user-row').value});
-        hideLoader(); document.getElementById('user-modal').style.display='none';
-        if(res.status==='success') { showToast('User Deleted'); fetchUsers(); } else showToast(res.message, 'error');
-    }
-
-    startApp();
+boot();
 </script>
 </body>
 </html>
