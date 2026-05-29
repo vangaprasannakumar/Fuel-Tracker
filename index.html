@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Fuel Tracker</title>
     <meta name="theme-color" content="#000000">
-    <meta name="app-version" content="20260529">
+    <meta name="app-version" content="20260530">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -92,6 +92,11 @@ body.on #bnav{display:flex}
 .sc-icon{font-size:20px;margin-bottom:8px}
 .sc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:4px}
 .sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1;animation:countUp .5s var(--ease)}
+/* MONTH FILTER BAR */
+.dash-period-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.period-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim)}
+.period-select{width:auto;padding:7px 14px;margin:0;font-size:13px!important;border-radius:10px;background:rgba(0,0,0,.4);border:1px solid var(--b2);color:var(--text);font-family:'Outfit';cursor:pointer;flex-shrink:0}
+.period-badge{font-size:11px;color:var(--dim);font-weight:500}
 .hero{background:linear-gradient(-45deg,#000d11,#001c22,#00111a,#000);background-size:400% 400%;animation:gshift 12s ease infinite;border-radius:24px;border:1px solid rgba(0,238,255,.11);box-shadow:0 0 60px rgba(0,238,255,.04),inset 0 1px 0 rgba(0,238,255,.07);padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;overflow:hidden}
 .hero::after{content:'⚡';position:absolute;top:-10px;right:120px;font-size:110px;opacity:.025;pointer-events:none}
 .hero-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent);margin-bottom:8px;opacity:.8}
@@ -113,7 +118,6 @@ body.on #bnav{display:flex}
 .pbar-bg{width:100%;background:rgba(255,255,255,.05);height:5px;border-radius:3px;overflow:hidden}
 .pbar-fill{height:100%;border-radius:3px;transition:width .8s var(--ease),background .3s}
 .svc-info{font-size:11px;color:var(--dim);margin-top:6px;font-weight:500}
-/* Service history list inside maintenance card */
 .svc-hist{margin-top:10px;border-top:1px solid rgba(255,255,255,.04);padding-top:10px}
 .svc-hist-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:7px}
 .svc-hist-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.02);font-size:12px}
@@ -295,14 +299,8 @@ body.on #bnav{display:flex}
         <div class="hist-wrap">
           <table class="hist-table">
             <thead><tr>
-              <th style="width:44px">#</th>
-              <th>Date &amp; Time</th>
-              <th>Type</th>
-              <th>Odometer</th>
-              <th class="r">Amount</th>
-              <th class="r col-hide">Liters</th>
-              <th class="col-hide">Logged By</th>
-              <th style="width:60px"></th>
+              <th style="width:44px">#</th><th>Date &amp; Time</th><th>Type</th><th>Odometer</th>
+              <th class="r">Amount</th><th class="r col-hide">Liters</th><th class="col-hide">Logged By</th><th style="width:60px"></th>
             </tr></thead>
             <tbody id="h-tbody"><tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Loading...</td></tr></tbody>
           </table>
@@ -312,13 +310,25 @@ body.on #bnav{display:flex}
 
       <!-- DASHBOARD -->
       <div id="view-dashboard" class="view">
-        <h2 class="vtitle">Analytics</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <h2 class="vtitle" style="margin:0">Analytics</h2>
+          <!-- MONTH FILTER (Issue 1) -->
+          <div class="dash-period-bar" style="margin-bottom:0">
+            <span class="period-label">Period</span>
+            <select id="dash-month" class="period-select" onchange="onMonthChange()">
+              <option value="ALL">All Time</option>
+            </select>
+            <span id="dash-period-badge" class="period-badge"></span>
+          </div>
+        </div>
+
         <div class="stats-grid">
           <div class="sc sc-c"><div class="sc-icon">💰</div><div class="sc-label">Total Spend</div><div class="sc-val" id="s-spent">₹0</div></div>
           <div class="sc sc-g"><div class="sc-icon">⛽</div><div class="sc-label">Total Fuel</div><div class="sc-val" id="s-liters">0 L</div></div>
           <div class="sc sc-a"><div class="sc-icon">📋</div><div class="sc-label">Total Logs</div><div class="sc-val" id="s-logs">0</div></div>
           <div class="sc sc-p"><div class="sc-icon">🏷️</div><div class="sc-label">Base Price</div><div class="sc-val" id="s-price">₹0</div></div>
         </div>
+
         <div class="hero">
           <div>
             <div class="hero-lbl">⚡ True Reserve-to-Reserve Efficiency</div>
@@ -329,15 +339,18 @@ body.on #bnav{display:flex}
             <div class="gauge-ring" id="g-ring"><div class="gauge-inner"><div class="g-pct" id="g-pct">0%</div><div class="g-sub">Score</div></div></div>
           </div>
         </div>
+
         <div class="slabel">Maintenance Lifecycle</div>
         <div id="maint-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Awaiting vehicle data...</p></div>
+
         <div class="slabel">Efficiency Timeline</div>
         <div id="mh-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs.</p></div>
+
         <div class="slabel">Telemetry Charts</div>
         <div class="charts-grid">
           <div><div class="chart-lbl">Mileage Trend (km/L)</div><div class="chart-box"><div id="ch-mileage"></div></div></div>
           <div><div class="chart-lbl">Monthly Spend (₹)</div><div class="chart-box"><div id="ch-spend"></div></div></div>
-          <div><div class="chart-lbl">Cost Contribution by User</div><div class="chart-box"><div id="ch-user"></div></div></div>
+          <div><div class="chart-lbl">Cost Contribution</div><div class="chart-box"><div id="ch-user"></div></div></div>
         </div>
       </div>
 
@@ -363,14 +376,14 @@ body.on #bnav{display:flex}
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-weight:700;font-size:15px">Fleet Vehicles</span><button class="btn btn-p btn-sm" onclick="openVehModal()">+ Add Vehicle</button></div>
               <div id="veh-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
             </div>
-            <div><div class="card" style="border-left:2px solid var(--green)"><h4>Vehicle IDs</h4><p style="margin-top:6px">IDs are auto-generated from the vehicle name on creation (e.g. V-ACT-4821). They are permanent namespace keys for all logs and maintenance settings.</p></div></div>
+            <div><div class="card" style="border-left:2px solid var(--green)"><h4>Vehicle IDs</h4><p style="margin-top:6px">IDs are auto-generated from the vehicle name (e.g. V-ACT-4821). They are permanent namespace keys for all logs and maintenance settings.</p></div></div>
           </div>
         </div>
       </div>
 
-    </div>
-  </div>
-</div>
+    </div><!-- /main-scroll -->
+  </div><!-- /app-body -->
+</div><!-- /app -->
 
 <!-- MODALS -->
 <div class="modal" id="price-modal"><div class="mbox"><div class="mtitle" style="color:var(--accent)">Update Fuel Price</div><label class="flabel">New Price per Liter (₹)</label><input type="number" id="m-price" step="0.01" inputmode="decimal"><div class="macts"><button class="btn btn-g" onclick="closeM('price-modal')">Cancel</button><button class="btn btn-p" onclick="updatePrice()">Update</button></div></div></div>
@@ -389,14 +402,25 @@ body.on #bnav{display:flex}
 
 <script>
 const API="https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
-const PG=30;
+const PG=30,CACHE_KEY='ft_cache',CACHE_TTL=1800000; // 30-min cache
 let CU={username:'',role:'',token:''},gPrice=0,gSet={},gVeh=[],gHist=[];
 let hPage=0,chM,chS,chU;
 let tQ=[],tOn=false;
 let fType='ALL',fFrom='',fTo='',fUser='';
+let dashMonth='ALL'; // ← Issue 1: month filter state
 
-// ISSUE 3: Date display — "28-05-2026" → "28/05/2026", time passed through as-is
+// DATE UTILS
 function fmtDT(date,time){return(date||'').replace(/-/g,'/')+(time?' '+time:'')}
+// Short label for chart x-axis: "28-05-2026" → "28/05"
+function shortDate(date){const p=(date||'').split('-');return p.length>=2?`${p[0]}/${p[1]}`:''}
+// Month key from date: "28-05-2026" → "2026-05"
+function monthKey(date){const p=(date||'').split('-');return p.length===3?`${p[2]}-${p[1]}`:''}
+// Human label: "2026-05" → "May 2026"
+function monthLabel(ym){
+  if(!ym||ym==='ALL')return'All Time';
+  const[y,m]=ym.split('-');
+  return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+y;
+}
 
 // TOAST
 function toast(msg,type='ok'){tQ.push({msg,type});runTQ()}
@@ -430,7 +454,7 @@ function confirm2(title,msg,ok='Confirm',danger=false,icon='⚠️'){
 }
 function closeM(id){document.getElementById(id).style.display='none'}
 
-// NAV — syncs sidebar + bottom nav
+// NAV
 function navTo(t){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
@@ -481,6 +505,29 @@ async function syncQ(){
 window.addEventListener('online',syncQ);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine)syncQ()});
 
+// ── ISSUE 3 FIX: CACHE + applyInitData ──────────────────────────────────────
+// applyInitData: extracted so it can be called by both fetchInit and restoreFromCache
+function applyInitData(){
+  document.getElementById('d-price').innerText=gPrice.toFixed(2);
+  const sv=localStorage.getItem('ft_veh'),sel=document.getElementById('ev'),pv=sel.value;
+  sel.innerHTML=gVeh.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  if(sv&&gVeh.some(v=>v.id===sv))sel.value=sv;else if(pv&&gVeh.some(v=>v.id===pv))sel.value=pv;
+  renderHist();
+  if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
+}
+
+// Restore from localStorage cache instantly (eliminates blank screen on refresh)
+function restoreFromCache(){
+  try{
+    const raw=localStorage.getItem(CACHE_KEY);if(!raw)return false;
+    const c=JSON.parse(raw);
+    if(!c||!c.vehicles||!c.history||Date.now()-c.ts>CACHE_TTL)return false;
+    gPrice=parseFloat(c.currentPrice)||0;gSet=c.settings||{};gVeh=c.vehicles;gHist=c.history;
+    applyInitData();
+    return true;
+  }catch(e){return false}
+}
+
 // AUTH
 async function doLogin(){
   const u=document.getElementById('l-user').value.trim(),p=document.getElementById('l-pass').value.trim();if(!u||!p)return;
@@ -489,7 +536,11 @@ async function doLogin(){
   if(r.status==='success'){localStorage.setItem('ft_u',JSON.stringify({username:r.username,role:r.role,token:r.token,e:Date.now()+(5.5*3600000)}));boot()}
   else document.getElementById('l-err').innerText=r.message;
 }
-function logout(){localStorage.removeItem('ft_u');location.reload()}
+function logout(){
+  localStorage.removeItem('ft_u');
+  localStorage.removeItem(CACHE_KEY); // clear data cache on logout
+  location.reload();
+}
 function boot(){
   const raw=localStorage.getItem('ft_u');if(!raw)return;
   const p=JSON.parse(raw);if(Date.now()>p.e)return logout();
@@ -497,20 +548,23 @@ function boot(){
   document.getElementById('d-user').innerText=p.username;
   document.getElementById('sb-user-chip').innerText=p.username;
   if(p.role==='Admin'){document.getElementById('ni-admin').classList.remove('hid');document.getElementById('sb-admin').classList.remove('hid')}
-  navTo('entry');fetchInit();setTimeout(syncQ,2000);
+  // ISSUE 3 FIX: Restore from cache IMMEDIATELY (instant render), then fetch fresh in background
+  const hadCache=restoreFromCache();
+  navTo('entry');
+  // Fetch fresh data — silent if cache already populated the UI
+  fetchInit(false,hadCache);
+  setTimeout(syncQ,2000);
   if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
 }
 
-// INIT DATA
-async function fetchInit(ref=false){
+// INIT DATA — saves to cache after success
+async function fetchInit(ref=false,silent=false){
   if(ref)showL('refresh');
   const r=await api({action:'getInitData'});if(ref)hideL();if(r.status!=='success')return;
   gPrice=parseFloat(r.currentPrice)||0;gSet=r.settings||{};gVeh=r.vehicles;gHist=r.history;
-  document.getElementById('d-price').innerText=gPrice.toFixed(2);
-  const sv=localStorage.getItem('ft_veh'),sel=document.getElementById('ev'),pv=sel.value;
-  sel.innerHTML=gVeh.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
-  if(sv&&gVeh.some(v=>v.id===sv))sel.value=sv;else if(pv&&gVeh.some(v=>v.id===pv))sel.value=pv;
-  renderHist();if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
+  // Save to cache for instant restore next time
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({currentPrice:r.currentPrice,settings:r.settings,vehicles:r.vehicles,history:r.history,ts:Date.now()}))}catch(e){}
+  applyInitData();
 }
 
 // ENTRY
@@ -626,16 +680,58 @@ async function updatePrice(){
   if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
 }
 
-// DASHBOARD
+// ── ISSUE 1: MONTH FILTER HELPERS ───────────────────────────────────────────
+function populateMonthFilter(allVl){
+  const sel=document.getElementById('dash-month');if(!sel)return;
+  const months=new Set();
+  allVl.forEach(h=>{const mk=monthKey(h.date);if(mk)months.add(mk)});
+  const sorted=[...months].sort().reverse();
+  const prev=sel.value;
+  sel.innerHTML='<option value="ALL">All Time</option>'+
+    sorted.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
+  if(sorted.includes(prev))sel.value=prev;
+  else sel.value=dashMonth;
+}
+function onMonthChange(){
+  dashMonth=document.getElementById('dash-month').value;
+  const badge=document.getElementById('dash-period-badge');
+  badge.innerText=dashMonth==='ALL'?'':'— '+monthLabel(dashMonth);
+  renderDash();
+}
+// Filter a log array by the current dashMonth
+function byMonth(logs){
+  if(dashMonth==='ALL')return logs;
+  return logs.filter(h=>monthKey(h.date)===dashMonth);
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────────────────────
 function renderDash(){
   const v=document.getElementById('ev').value;
-  const vl=gHist.filter(h=>h.vehicleId===v),fl=vl.filter(h=>h.logType==='FUELING');
+  const allVl=gHist.filter(h=>h.vehicleId===v); // full vehicle history
+
+  // Populate month filter from full history
+  populateMonthFilter(allVl);
+
+  // Stats & charts use month-filtered data
+  const vl=byMonth(allVl);
+  const fl=vl.filter(h=>h.logType==='FUELING');
+
   const spent=fl.reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
   const lit=fl.reduce((s,f)=>s+(parseFloat(f.liters)||0),0);
   anim('s-spent',spent,'₹','',true);anim('s-liters',lit,'',' L',false);
   anim('s-logs',vl.length,'','',false);document.getElementById('s-price').innerText='₹'+gPrice.toFixed(2);
-  calcMileage(v,vl);renderMaint(v,vl);renderMileHist(v,vl);renderCharts(v,vl,fl);
+
+  // Mileage hero + maintenance always use FULL history (ODO-based)
+  calcMileage(v,allVl);
+  renderMaint(v,allVl);
+
+  // Efficiency table filtered by month
+  renderMileHist(v,allVl);
+
+  // Charts: mileage segments built from full history then filtered, spend/user from fl
+  renderCharts(v,allVl,fl);
 }
+
 function anim(id,target,pre,suf,cur){
   const el=document.getElementById(id);if(!el)return;
   const s=performance.now(),d=900,tick=now=>{
@@ -646,7 +742,7 @@ function anim(id,target,pre,suf,cur){
   };requestAnimationFrame(tick);
 }
 
-// ISSUE 2 FIX: >= start (inclusive), < end (exclusive)
+// Mileage hero — always last segment, no month filter
 function calcMileage(v,vl){
   const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
   const km=document.getElementById('dash-km'),sub=document.getElementById('dash-sub');
@@ -673,7 +769,7 @@ function setGauge(pct,color){
   document.getElementById('g-pct').innerText=Math.round(pct)+'%';
 }
 
-// ISSUE 4 FIX: Maintenance with null-safe check + history placeholder
+// Maintenance — uses full history
 function renderMaint(v,vl){
   if(!v||!vl.length)return;
   const odo=Math.max(...vl.map(h=>parseFloat(h.odo)||0));
@@ -684,7 +780,6 @@ function renderMaint(v,vl){
     ${mc('⛓️ Chain Lube','500 km',lubeOdo,odo,v,'LUBE','lube-hist')}
     ${mc('🛢️ Engine Oil','3,000 km',oilOdo,odo,v,'OIL','oil-hist')}
   </div>`;
-  // Fire history fetch after cards render — non-blocking
   fetchSvcHist(v);
 }
 function mc(lbl,intv,lastOdo,curOdo,v,t,histId){
@@ -709,8 +804,6 @@ function mc(lbl,intv,lastOdo,curOdo,v,t,histId){
   <div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div>
   <div id="${histId}"><p style="font-size:11px;color:var(--dim);margin-top:8px">Loading history...</p></div></div>`;
 }
-
-// Fetch & inject service history into already-rendered cards
 async function fetchSvcHist(v){
   const r=await api({action:'getServiceHistory',vehicleId:v});
   if(r.status!=='success')return;
@@ -720,26 +813,17 @@ async function fetchSvcHist(v){
 function injectSvcHist(elId,records,icon){
   const el=document.getElementById(elId);if(!el)return;
   if(!records||!records.length){
-    el.innerHTML='<p style="font-size:11px;color:var(--dim);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">No service history recorded yet.</p>';
-    return;
+    el.innerHTML='<p style="font-size:11px;color:var(--dim);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">No service history recorded yet.</p>';return;
   }
   let html='<div class="svc-hist"><div class="svc-hist-title">'+icon+' Service History</div>';
   records.forEach((rec,i)=>{
     const odoStr=rec.odo?rec.odo.toLocaleString()+' km':'Unknown ODO';
-    // Parse ISO timestamp to dd/MM/yyyy
     let dateStr='—';
-    if(rec.timestamp){
-      try{const d=new Date(rec.timestamp);dateStr=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}catch(e){}
-    }
-    html+=`<div class="svc-hist-row">
-      <span class="svc-hist-odo" style="color:${i===0?'var(--text)':'var(--muted)'}">${odoStr}</span>
-      <span class="svc-hist-meta">${dateStr} · ${rec.user}</span>
-    </div>`;
+    if(rec.timestamp){try{const d=new Date(rec.timestamp);dateStr=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}catch(e){}}
+    html+=`<div class="svc-hist-row"><span class="svc-hist-odo" style="color:${i===0?'var(--text)':'var(--muted)'}">${odoStr}</span><span class="svc-hist-meta">${dateStr} · ${rec.user}</span></div>`;
   });
-  html+='</div>';
-  el.innerHTML=html;
+  html+='</div>';el.innerHTML=html;
 }
-
 async function markSvc(t,odo,v){
   const lbl=t==='LUBE'?'Chain Lube':'Engine Oil';
   const ok=await confirm2(`Mark ${lbl} Done?`,`Log service at ${odo.toLocaleString()} km?`,'Mark Done',false,t==='LUBE'?'⛓️':'🛢️');
@@ -747,23 +831,22 @@ async function markSvc(t,odo,v){
   if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
 }
 
-// ISSUE 2 FIX: >= start, < end in all segments
-function renderMileHist(v,vl){
-  const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
+// EFFICIENCY TIMELINE — filters by month when one is selected
+function renderMileHist(v,allVl){
+  const res=allVl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
   const area=document.getElementById('mh-area');
   if(res.length<2){area.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs to compute segments.</p>';return}
-  const segs=[];
+  // Build ALL segments from full history
+  const allSegs=[];
   for(let i=1;i<res.length;i++){
     const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
     let fuel=0;
-    vl.forEach(h=>{
-      if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))
-        fuel+=parseFloat(h.liters)||0;
-    });
-    if(fuel>0&&dist>0)segs.push({date:e.date,dist,fuel,eff:dist/fuel});
+    allVl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))fuel+=parseFloat(h.liters)||0});
+    if(fuel>0&&dist>0)allSegs.push({date:e.date,dist,fuel,eff:dist/fuel});
   }
-  if(!segs.length){area.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">No complete segments yet.</p>';return}
-  segs.reverse();
+  // Filter by month if needed
+  const segs=(dashMonth==='ALL'?allSegs:allSegs.filter(sg=>monthKey(sg.date)===dashMonth)).slice().reverse();
+  if(!segs.length){area.innerHTML=`<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">No segments for ${monthLabel(dashMonth)}.</p>`;return}
   const grd=e=>{
     if(e>=52)return{g:'S', c:'#00eeff',bg:'rgba(0,238,255,.08)',  b:'rgba(0,238,255,.2)'};
     if(e>=45)return{g:'A+',c:'#10b981',bg:'rgba(16,185,129,.08)', b:'rgba(16,185,129,.2)'};
@@ -792,28 +875,50 @@ function renderMileHist(v,vl){
   </table></div>`;
 }
 
-// CHARTS — all 3 in same grid, BUG-05 sort fixed
-function renderCharts(v,vl,fl){
+// ── ISSUE 2 FIX: CHARTS — short labels, segments from full history, month filter ──
+function renderCharts(v,allVl,fl){
   if(!window.ApexCharts)return;
-  if(!vl.length){['ch-mileage','ch-spend','ch-user'].forEach(id=>{document.getElementById(id).innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No data yet.</p>'});return}
-  const base={chart:{background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:700}},theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,.04)',strokeDashArray:4},tooltip:{theme:'dark'},xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}},yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}}};
-  const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
-  const md=[];
+  const base={chart:{background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:600}},theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,.04)',strokeDashArray:4},tooltip:{theme:'dark'},xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'},rotate:-30,rotateAlways:false,hideOverlappingLabels:true}},yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}}};
+
+  // Build ALL mileage segments from full vehicle history
+  const res=allVl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
+  const allSegs=[];
   for(let i=1;i<res.length;i++){
     const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
-    let f=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))f+=parseFloat(h.liters)||0});
-    if(f>0)md.push({x:fmtDT(e.date,''),y:parseFloat((dist/f).toFixed(1))});
+    let f=0;allVl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))f+=parseFloat(h.liters)||0});
+    if(f>0)allSegs.push({date:e.date,dist,fuel:f,eff:dist/f});
   }
+  // Filter mileage segments by month
+  const mSegs=dashMonth==='ALL'?allSegs:allSegs.filter(sg=>monthKey(sg.date)===dashMonth);
+  // SHORT date labels: "28/05" not "28/05/2026"
+  const md=mSegs.map(sg=>({x:shortDate(sg.date),y:parseFloat(sg.eff.toFixed(1))}));
+
   if(chM)chM.destroy();
-  chM=new ApexCharts(document.getElementById('ch-mileage'),{...base,series:[{name:'km/L',data:md}],chart:{...base.chart,type:'area',height:200},colors:['#00eeff'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},stroke:{curve:'smooth',width:2.5},markers:{size:md.length<=10?4:0,colors:['#00eeff'],strokeWidth:0},dataLabels:{enabled:false}});chM.render();
+  if(!md.length){
+    document.getElementById('ch-mileage').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No segments for this period.</p>';
+  }else{
+    chM=new ApexCharts(document.getElementById('ch-mileage'),{...base,series:[{name:'km/L',data:md}],chart:{...base.chart,type:'area',height:200},colors:['#00eeff'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},stroke:{curve:'smooth',width:2.5},markers:{size:md.length<=12?4:0,colors:['#00eeff'],strokeWidth:0},dataLabels:{enabled:false}});chM.render();
+  }
+
+  // Spend chart — monthly grouping from fl (already filtered by month)
   const sm={};
   fl.forEach(h=>{const p=h.date.split('-');if(p.length===3){const k=`${p[1]}/${p[2].slice(-2)}`,sk=`${p[2]}${p[1]}`;if(!sm[k])sm[k]={v:0,s:sk};sm[k].v+=parseFloat(h.amount)||0}});
   const sorted=Object.entries(sm).sort((a,b)=>a[1].s.localeCompare(b[1].s));
   if(chS)chS.destroy();
-  chS=new ApexCharts(document.getElementById('ch-spend'),{...base,colors:['#10b981'],series:[{name:'₹ Spend',data:sorted.map(([,v])=>parseFloat(v.v.toFixed(2)))}],chart:{...base.chart,type:'bar',height:200},plotOptions:{bar:{borderRadius:5,columnWidth:'50%'}},dataLabels:{enabled:false},xaxis:{...base.xaxis,categories:sorted.map(([k])=>k)}});chS.render();
+  if(!sorted.length){
+    document.getElementById('ch-spend').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No spend data for this period.</p>';
+  }else{
+    chS=new ApexCharts(document.getElementById('ch-spend'),{...base,colors:['#10b981'],series:[{name:'₹ Spend',data:sorted.map(([,v])=>parseFloat(v.v.toFixed(2)))}],chart:{...base.chart,type:'bar',height:200},plotOptions:{bar:{borderRadius:5,columnWidth:'55%'}},dataLabels:{enabled:false},xaxis:{...base.xaxis,categories:sorted.map(([k])=>k)}});chS.render();
+  }
+
+  // User donut — from fl (month-filtered)
   const um={};fl.forEach(h=>{if(!um[h.loggedBy])um[h.loggedBy]=0;um[h.loggedBy]+=parseFloat(h.amount)||0});
   if(chU)chU.destroy();
-  chU=new ApexCharts(document.getElementById('ch-user'),{...base,colors:['#00eeff','#10b981','#f59e0b','#a855f7','#ef4444'],series:Object.values(um).map(v=>parseFloat(v.toFixed(2))),labels:Object.keys(um),chart:{...base.chart,type:'donut',height:220},stroke:{colors:['#09090b'],width:2},plotOptions:{pie:{donut:{size:'68%',labels:{show:true,total:{show:true,label:'Total',color:'#8b8b99',fontSize:'11px',formatter:w=>'₹'+w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString('en-IN',{maximumFractionDigits:0})}}}}},dataLabels:{enabled:false},legend:{position:'bottom',labels:{colors:'#8b8b99'},fontSize:'11px'}});chU.render();
+  if(!Object.keys(um).length){
+    document.getElementById('ch-user').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No data for this period.</p>';
+  }else{
+    chU=new ApexCharts(document.getElementById('ch-user'),{...base,colors:['#00eeff','#10b981','#f59e0b','#a855f7','#ef4444'],series:Object.values(um).map(v=>parseFloat(v.toFixed(2))),labels:Object.keys(um),chart:{...base.chart,type:'donut',height:220},stroke:{colors:['#09090b'],width:2},plotOptions:{pie:{donut:{size:'68%',labels:{show:true,total:{show:true,label:'Total',color:'#8b8b99',fontSize:'11px',formatter:w=>'₹'+w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString('en-IN',{maximumFractionDigits:0})}}}}},dataLabels:{enabled:false},legend:{position:'bottom',labels:{colors:'#8b8b99'},fontSize:'11px'}});chU.render();
+  }
 }
 
 // ADMIN USERS
@@ -825,8 +930,7 @@ async function fetchUsers(){
 }
 function openUserModal(row='',name='',role='User'){
   document.getElementById('um-row').value=row;document.getElementById('um-orig').value=name;
-  document.getElementById('um-name').value=name;document.getElementById('um-role').value=role;
-  document.getElementById('um-pass').value='';
+  document.getElementById('um-name').value=name;document.getElementById('um-role').value=role;document.getElementById('um-pass').value='';
   document.getElementById('um-title').innerText=row?'Edit User':'Add New User';
   document.getElementById('um-del').style.display=row?'block':'none';
   document.getElementById('user-modal').style.display='flex';
