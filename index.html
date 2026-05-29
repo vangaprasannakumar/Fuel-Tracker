@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Fuel Tracker</title>
     <meta name="theme-color" content="#000000">
-    <meta name="app-version" content="20260528">
+    <meta name="app-version" content="20260529">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -14,48 +14,27 @@
     <link rel="apple-touch-icon" href="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png">
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
-:root {
-  --bg:#000;--surface:#09090b;--s2:#0f0f12;--border:#1a1a24;--b2:#242432;
-  --text:#f4f4f5;--muted:#8b8b99;--dim:#44445a;
-  --accent:#00eeff;--green:#10b981;--amber:#f59e0b;--danger:#ef4444;--purple:#a855f7;
-  --sidebar-w:240px;--hdr-h:58px;
-  --ease:cubic-bezier(.4,0,.2,1);--spring:cubic-bezier(.34,1.56,.64,1);
-}
+:root{--bg:#000;--surface:#09090b;--s2:#0f0f12;--border:#1a1a24;--b2:#242432;--text:#f4f4f5;--muted:#8b8b99;--dim:#44445a;--accent:#00eeff;--green:#10b981;--amber:#f59e0b;--danger:#ef4444;--purple:#a855f7;--sidebar-w:240px;--hdr-h:58px;--ease:cubic-bezier(.4,0,.2,1);--spring:cubic-bezier(.34,1.56,.64,1)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Outfit',sans-serif;color:var(--text);background:var(--bg);height:100dvh;width:100vw;overflow:hidden;display:flex;justify-content:center}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(0,238,255,.055) 0%,transparent 70%),
-    radial-gradient(ellipse 40% 30% at 85% 85%,rgba(168,85,247,.035) 0%,transparent 60%),
-    radial-gradient(ellipse 35% 40% at 5% 60%,rgba(16,185,129,.025) 0%,transparent 55%)}
-
-/* ANIMATIONS */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 50% -20%,rgba(0,238,255,.055) 0%,transparent 70%),radial-gradient(ellipse 40% 30% at 85% 85%,rgba(168,85,247,.035) 0%,transparent 60%),radial-gradient(ellipse 35% 40% at 5% 60%,rgba(16,185,129,.025) 0%,transparent 55%)}
 @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 @keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes gshift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 @keyframes countUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-
-/* LOADER */
 #loader{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.88);backdrop-filter:blur(20px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px}
 .ring{width:46px;height:46px;border:3px solid rgba(0,238,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
-
-/* TOAST — BUG-01 FIXED */
 #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-110px);background:rgba(16,185,129,.95);backdrop-filter:blur(16px);color:#fff;padding:12px 22px;border-radius:50px;z-index:100000;transition:all .35s var(--spring);font-weight:600;font-size:14px;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(16,185,129,.3);display:flex;align-items:center;gap:8px}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 #toast.err{background:rgba(239,68,68,.95);box-shadow:0 8px 32px rgba(239,68,68,.3)}
-
-/* LOGIN */
 #login-wrap{display:flex;align-items:center;justify-content:center;width:100%;height:100%;position:relative;z-index:1}
 body.on #login-wrap{display:none}
 #login-box{width:100%;max-width:380px;margin:16px;background:rgba(9,9,11,.92);backdrop-filter:blur(24px);border:1px solid rgba(0,238,255,.09);border-radius:28px;padding:48px 36px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.03);animation:fadeUp .5s var(--ease)}
 #login-box img{width:78px;height:78px;border-radius:20px;box-shadow:0 0 30px rgba(0,238,255,.18)}
 #login-box h2{font-family:'Syne',sans-serif;font-size:26px;color:var(--accent);margin:14px 0 26px;text-shadow:0 0 28px rgba(0,238,255,.35);letter-spacing:-.5px}
-
-/* INPUTS */
 input[type=text],input[type=password],input[type=number],input[type=date],select{width:100%;padding:13px 17px;margin:5px 0;border-radius:13px;border:1px solid var(--b2);background:rgba(0,0,0,.4);color:var(--text);font-family:'Outfit';font-size:16px!important;transition:all .25s var(--ease);outline:none}
 input:focus,select:focus{border-color:var(--accent);background:rgba(0,238,255,.02);box-shadow:0 0 0 3px rgba(0,238,255,.07)}
-
-/* BUTTONS */
 .btn{width:100%;padding:13px;border:none;border-radius:13px;font-family:'Outfit';font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;transition:all .2s var(--ease)}
 .btn-p{background:var(--accent);color:#000;box-shadow:0 4px 20px rgba(0,238,255,.22)}
 .btn-p:hover{background:#00d4e6;transform:translateY(-1px)}
@@ -68,23 +47,15 @@ input:focus,select:focus{border-color:var(--accent);background:rgba(0,238,255,.0
 .btn-sm{width:auto;padding:6px 14px;font-size:12px;margin-top:0;font-weight:700}
 .icon-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:10px;width:38px;height:38px;display:flex;justify-content:center;align-items:center;cursor:pointer;transition:.2s;flex-shrink:0}
 .icon-btn:hover{color:var(--text);border-color:var(--b2)}
-
-/* APP SHELL */
 .app{width:100%;max-width:1440px;height:100%;display:none;flex-direction:column;position:relative;z-index:1}
 body.on .app{display:flex}
-
-/* HEADER */
 .hdr{display:flex;justify-content:space-between;align-items:center;padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.03);background:rgba(0,0,0,.82);position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);height:var(--hdr-h);flex-shrink:0}
 .hdr-l{display:flex;align-items:center;gap:10px}
 .hdr-l img{width:32px;height:32px;border-radius:9px}
 .hdr h1{font-family:'Syne',sans-serif;font-size:18px;letter-spacing:-.3px}
 .hdr-r{display:flex;align-items:center;gap:8px}
 .chip{font-size:11px;font-weight:700;padding:5px 12px;border-radius:50px;border:1px solid rgba(0,238,255,.14);background:rgba(0,238,255,.06);color:var(--accent);letter-spacing:.3px}
-
-/* APP BODY: sidebar + main content */
 .app-body{display:flex;flex:1;overflow:hidden;min-height:0}
-
-/* SIDEBAR (desktop only) */
 #sidebar{display:none;width:var(--sidebar-w);flex-shrink:0;flex-direction:column;border-right:1px solid rgba(255,255,255,.04);padding:16px 12px 20px;overflow-y:auto;gap:4px;background:rgba(0,0,0,.3)}
 .sb-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);padding:14px 10px 6px}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);font-size:13px;font-weight:600;-webkit-tap-highlight-color:transparent}
@@ -93,11 +64,7 @@ body.on .app{display:flex}
 .sb-item.on{color:var(--accent);background:rgba(0,238,255,.08)}
 .sb-spacer{flex:1}
 .sb-footer{padding:12px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;margin-top:auto}
-
-/* MAIN SCROLL */
 .main-scroll{flex:1;overflow-y:auto;min-width:0;scroll-behavior:smooth}
-
-/* BOTTOM NAV (mobile) */
 #bnav{display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:92%;max-width:420px;background:rgba(5,5,7,.96);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.055);border-radius:28px;padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;z-index:1000;box-shadow:0 16px 48px rgba(0,0,0,.8)}
 body.on #bnav{display:flex}
 .ni{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:20px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);flex:1;min-height:52px;-webkit-tap-highlight-color:transparent}
@@ -105,19 +72,13 @@ body.on #bnav{display:flex}
 .ni span{font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
 .ni.on{color:var(--accent);background:rgba(0,238,255,.08)}
 .ni.hid{display:none!important}
-
-/* VIEWS */
 .view{padding:20px 20px calc(110px + env(safe-area-inset-bottom));display:none;opacity:0}
 .view.on{display:block;opacity:1;animation:slideIn .3s var(--ease) forwards}
 .vtitle{font-family:'Syne',sans-serif;font-size:24px;letter-spacing:-.5px;margin-bottom:18px}
-
-/* CARDS */
 .card{background:rgba(9,9,11,.7);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.04);border-radius:18px;padding:16px;margin-bottom:12px;position:relative;transition:all .25s var(--ease)}
 .card:hover{border-color:rgba(255,255,255,.07)}
 .card h4{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
 .card p{font-size:13px;color:var(--muted)}
-
-/* STAT CARDS */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
 .sc{border-radius:20px;padding:16px;position:relative;overflow:hidden;transition:all .3s var(--ease)}
 .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--scc),transparent);opacity:.7}
@@ -131,8 +92,6 @@ body.on #bnav{display:flex}
 .sc-icon{font-size:20px;margin-bottom:8px}
 .sc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:4px}
 .sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1;animation:countUp .5s var(--ease)}
-
-/* MILEAGE HERO */
 .hero{background:linear-gradient(-45deg,#000d11,#001c22,#00111a,#000);background-size:400% 400%;animation:gshift 12s ease infinite;border-radius:24px;border:1px solid rgba(0,238,255,.11);box-shadow:0 0 60px rgba(0,238,255,.04),inset 0 1px 0 rgba(0,238,255,.07);padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;overflow:hidden}
 .hero::after{content:'⚡';position:absolute;top:-10px;right:120px;font-size:110px;opacity:.025;pointer-events:none}
 .hero-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent);margin-bottom:8px;opacity:.8}
@@ -141,27 +100,26 @@ body.on #bnav{display:flex}
 #dash-km.warn{color:var(--amber);text-shadow:0 0 40px rgba(245,158,11,.18)}
 #dash-km.poor{color:var(--danger);text-shadow:0 0 40px rgba(239,68,68,.18)}
 #dash-sub{font-size:12px;color:var(--muted);margin-top:7px}
-
-/* GAUGE */
 .gauge-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px}
 .gauge-ring{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;transition:all 1.2s var(--ease)}
 .gauge-inner{width:70px;height:70px;background:#08080e;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;z-index:1}
 .g-pct{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text)}
 .g-sub{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
-
-/* SECTION LABEL */
 .slabel{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin:22px 0 12px;display:flex;align-items:center;gap:10px}
 .slabel::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,rgba(255,255,255,.055),transparent)}
-
-/* MAINTENANCE */
 .maint-grid{display:grid;grid-template-columns:1fr;gap:12px}
 .maint-card{background:rgba(0,0,0,.28);padding:14px;border-radius:14px;border:1px solid rgba(255,255,255,.04)}
 .maint-hdr{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:10px}
 .pbar-bg{width:100%;background:rgba(255,255,255,.05);height:5px;border-radius:3px;overflow:hidden}
 .pbar-fill{height:100%;border-radius:3px;transition:width .8s var(--ease),background .3s}
-.svc-info{font-size:11px;color:var(--dim);margin-top:8px;font-weight:500}
-
-/* MILEAGE HISTORY TABLE */
+.svc-info{font-size:11px;color:var(--dim);margin-top:6px;font-weight:500}
+/* Service history list inside maintenance card */
+.svc-hist{margin-top:10px;border-top:1px solid rgba(255,255,255,.04);padding-top:10px}
+.svc-hist-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:7px}
+.svc-hist-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.02);font-size:12px}
+.svc-hist-row:last-child{border-bottom:none}
+.svc-hist-odo{font-family:'Syne',sans-serif;font-weight:700;font-size:13px}
+.svc-hist-meta{color:var(--dim);font-size:11px}
 .mh-wrap{overflow-x:auto;border-radius:16px;border:1px solid rgba(255,255,255,.04);background:rgba(9,9,11,.5)}
 .mh-table{width:100%;border-collapse:collapse}
 .mh-table th{padding:11px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,.04)}
@@ -176,13 +134,9 @@ body.on #bnav{display:flex}
 .mini-stat{background:rgba(9,9,11,.6);border:1px solid rgba(255,255,255,.04);border-radius:12px;padding:12px 14px}
 .mini-stat-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);margin-bottom:4px}
 .mini-stat-v{font-family:'Syne',sans-serif;font-size:17px;font-weight:800}
-
-/* CHARTS */
 .chart-box{background:rgba(9,9,11,.4);border:1px solid rgba(255,255,255,.03);border-radius:16px;padding:14px 8px;margin-bottom:16px}
 .chart-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin-bottom:8px;padding-left:8px}
 .charts-grid{display:grid;grid-template-columns:1fr;gap:0}
-
-/* HISTORY TABLE */
 .filter-bar{background:rgba(9,9,11,.7);border:1px solid rgba(255,255,255,.04);border-radius:16px;padding:14px 16px;margin-bottom:16px}
 .filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .filter-row:last-child{margin-bottom:0}
@@ -196,7 +150,6 @@ body.on #bnav{display:flex}
 .filter-search{flex:1;min-width:100px;padding:8px 12px;margin:0;font-size:13px!important}
 .reset-btn{padding:6px 12px;border-radius:10px;border:1px solid var(--b2);background:transparent;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit';white-space:nowrap}
 .reset-btn:hover{color:var(--muted);border-color:var(--border)}
-
 .hist-wrap{overflow-x:auto;border-radius:16px;border:1px solid rgba(255,255,255,.04);background:rgba(9,9,11,.5)}
 .hist-table{width:100%;border-collapse:collapse;white-space:nowrap}
 .hist-table th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.2);position:sticky;top:0;z-index:2}
@@ -210,22 +163,16 @@ body.on #bnav{display:flex}
 .odo-val{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
 .epill{font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;border:1px solid var(--b2);cursor:pointer;color:var(--muted);transition:.2s;background:transparent}
 .epill:hover{background:var(--border);color:var(--text)}
-
-/* PAGINATION */
 .pgn{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;padding-bottom:6px;flex-wrap:wrap}
 .pbtn{background:rgba(9,9,11,.8);border:1px solid var(--b2);color:var(--muted);border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit'}
 .pbtn:hover{border-color:var(--accent);color:var(--accent)}
 .pbtn.on{background:rgba(0,238,255,.09);border-color:rgba(0,238,255,.28);color:var(--accent)}
 .pbtn:disabled{opacity:.3;cursor:not-allowed}
-
-/* ENTRY */
 .entry-layout{display:grid;grid-template-columns:1fr;gap:16px}
 .type-row{display:flex;gap:8px;margin-bottom:18px}
 .tbtn{flex:1;padding:11px;border-radius:12px;border:1px solid var(--b2);background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:.2s;font-family:'Outfit'}
 .tbtn.fuel{background:rgba(0,238,255,.09);border-color:rgba(0,238,255,.28);color:var(--accent)}
 .tbtn.res{background:rgba(245,158,11,.09);border-color:rgba(245,158,11,.28);color:var(--amber)}
-
-/* ADMIN */
 .atabs{display:flex;gap:6px;margin-bottom:18px}
 .atab{padding:8px 18px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;transition:.2s;border:1px solid var(--b2);color:var(--muted);background:transparent;font-family:'Outfit'}
 .atab.on{background:rgba(0,238,255,.07);border-color:rgba(0,238,255,.2);color:var(--accent)}
@@ -236,8 +183,6 @@ body.on #bnav{display:flex}
 .badge{display:inline-block;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;background:rgba(0,238,255,.08);color:var(--accent);border:1px solid rgba(0,238,255,.14)}
 .badge-a{background:rgba(245,158,11,.08);color:var(--amber);border-color:rgba(245,158,11,.14)}
 .badge-p{background:rgba(168,85,247,.08);color:var(--purple);border-color:rgba(168,85,247,.14)}
-
-/* MODALS */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:10000;justify-content:center;align-items:flex-end}
 @media(min-width:480px){.modal{align-items:center}}
 .mbox{background:var(--surface);border:1px solid rgba(255,255,255,.05);border-radius:24px 24px 0 0;padding:26px 22px 36px;width:100%;max-width:420px;animation:fadeUp .25s var(--spring)}
@@ -245,45 +190,19 @@ body.on #bnav{display:flex}
 .mtitle{font-family:'Syne',sans-serif;font-size:20px;margin-bottom:18px}
 .macts{display:flex;gap:10px;margin-top:20px}
 .flabel{font-size:13px;color:var(--muted);display:block;margin:12px 0 5px;font-weight:500}
+.flabel-sub{font-size:11px;color:var(--dim);margin-left:6px;font-weight:400}
 #cfm-modal .mbox{text-align:center;max-width:360px}
-
-/* SCROLL TOP */
 #stb{display:none;position:fixed;bottom:95px;right:18px;z-index:998;background:rgba(9,9,11,.9);color:var(--muted);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;cursor:pointer;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(10px)}
 #stb:hover{color:var(--accent);border-color:rgba(0,238,255,.3)}
-.flabel-sub{font-size:11px;color:var(--dim);margin-left:6px;font-weight:400}
-
-/* DESKTOP RESPONSIVE */
-@media(min-width:768px){
-  .stats-grid{grid-template-columns:repeat(4,1fr)}
-  .maint-grid{grid-template-columns:1fr 1fr}
-  .entry-layout{grid-template-columns:1.2fr .8fr;gap:24px}
-  .admin-layout{grid-template-columns:1fr 1fr;gap:20px}
-  .charts-grid{grid-template-columns:1fr 1fr}
-}
-@media(min-width:1200px){
-  #sidebar{display:flex}
-  body.on #bnav{display:none!important}
-  #stb{bottom:24px}
-  .view{padding:24px 32px 40px}
-  .charts-grid{grid-template-columns:1fr 1fr 1fr}
-  .hist-table .col-hide{display:table-cell}
-}
-@media(max-width:1199px){
-  .hist-table .col-hide{display:none}
-}
+@media(min-width:768px){.stats-grid{grid-template-columns:repeat(4,1fr)}.maint-grid{grid-template-columns:1fr 1fr}.entry-layout{grid-template-columns:1.2fr .8fr;gap:24px}.admin-layout{grid-template-columns:1fr 1fr;gap:20px}.charts-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1200px){#sidebar{display:flex}body.on #bnav{display:none!important}#stb{bottom:24px}.view{padding:24px 32px 40px}.charts-grid{grid-template-columns:1fr 1fr 1fr}.hist-table .col-hide{display:table-cell}}
+@media(max-width:1199px){.hist-table .col-hide{display:none}}
     </style>
 </head>
 <body>
-
-<div id="loader">
-  <div class="ring"></div>
-  <div id="l-msg" style="font-size:15px;font-weight:600;color:var(--text);text-align:center"></div>
-  <div id="l-sub" style="font-size:12px;color:var(--muted)"></div>
-</div>
-
+<div id="loader"><div class="ring"></div><div id="l-msg" style="font-size:15px;font-weight:600;color:var(--text);text-align:center"></div><div id="l-sub" style="font-size:12px;color:var(--muted)"></div></div>
 <div id="toast"><span id="t-icon"></span><span id="toast-msg"></span></div>
 
-<!-- LOGIN -->
 <div id="login-wrap">
   <div id="login-box">
     <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo">
@@ -295,54 +214,27 @@ body.on #bnav{display:flex}
   </div>
 </div>
 
-<!-- APP -->
 <div class="app" id="APP">
-
   <div class="hdr">
-    <div class="hdr-l">
-      <img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo">
-      <h1>Fuel Tracker</h1>
-    </div>
+    <div class="hdr-l"><img src="https://i.postimg.cc/RVH44Qpd/Fuel-Tracer-App.png" alt="Logo"><h1>Fuel Tracker</h1></div>
     <div class="hdr-r">
-      <button onclick="fetchInit(true)" class="icon-btn" title="Refresh">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-      </button>
+      <button onclick="fetchInit(true)" class="icon-btn" title="Refresh"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
       <span class="chip" id="d-user">--</span>
-      <button onclick="logout()" class="icon-btn" title="Logout" style="border-color:rgba(239,68,68,.3);color:var(--danger)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-      </button>
+      <button onclick="logout()" class="icon-btn" title="Logout" style="border-color:rgba(239,68,68,.3);color:var(--danger)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></button>
     </div>
   </div>
 
   <div class="app-body">
-
-    <!-- SIDEBAR (desktop only) -->
     <aside id="sidebar">
       <div class="sb-section">Navigation</div>
-      <div class="sb-item on" id="sb-entry" onclick="navTo('entry')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
-        <span>Log Entry</span>
-      </div>
-      <div class="sb-item" id="sb-history" onclick="navTo('history')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        <span>Log History</span>
-      </div>
-      <div class="sb-item" id="sb-dashboard" onclick="navTo('dashboard')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        <span>Analytics</span>
-      </div>
-      <div class="sb-item hid" id="sb-admin" onclick="navTo('admin')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        <span>Admin</span>
-      </div>
+      <div class="sb-item on" id="sb-entry" onclick="navTo('entry')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg><span>Log Entry</span></div>
+      <div class="sb-item" id="sb-history" onclick="navTo('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Log History</span></div>
+      <div class="sb-item" id="sb-dashboard" onclick="navTo('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Analytics</span></div>
+      <div class="sb-item hid" id="sb-admin" onclick="navTo('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Admin</span></div>
       <div class="sb-spacer"></div>
-      <div class="sb-footer">
-        <span class="chip" id="sb-user-chip">--</span>
-        <button onclick="logout()" class="btn-g btn-sm" style="border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Outfit';font-weight:700">Logout</button>
-      </div>
+      <div class="sb-footer"><span class="chip" id="sb-user-chip">--</span><button onclick="logout()" class="btn-g btn-sm" style="border-radius:10px;padding:6px 12px;font-size:12px;cursor:pointer;font-family:'Outfit';font-weight:700">Logout</button></div>
     </aside>
 
-    <!-- MAIN CONTENT -->
     <div class="main-scroll" id="main-scroll">
 
       <!-- ENTRY -->
@@ -370,14 +262,8 @@ body.on #bnav{display:flex}
             <button class="btn btn-p" id="b-submit" onclick="submitEntry()" style="margin-top:26px">Log Entry</button>
           </div>
           <div style="padding-top:44px">
-            <div class="card" style="border-left:2px solid var(--accent)">
-              <h4>Pump Side Assist</h4>
-              <p style="margin-top:6px">Entries validate against odometer history. Offline logs stage in an itemized queue and auto-sync on reconnect.</p>
-            </div>
-            <div class="card" style="border-left:2px solid var(--amber)">
-              <h4>⚠️ Reserve Hit</h4>
-              <p style="margin-top:6px">Log each time you hit low fuel. Two reserve logs unlock True Mileage calculation.</p>
-            </div>
+            <div class="card" style="border-left:2px solid var(--accent)"><h4>Pump Side Assist</h4><p style="margin-top:6px">Entries validate against odometer history. Offline logs stage in an itemized queue and auto-sync on reconnect.</p></div>
+            <div class="card" style="border-left:2px solid var(--amber)"><h4>⚠️ Reserve Hit</h4><p style="margin-top:6px">Log each time you hit low fuel. Two reserve logs unlock True Mileage calculation.</p></div>
           </div>
         </div>
       </div>
@@ -388,8 +274,6 @@ body.on #bnav{display:flex}
           <h2 class="vtitle" style="margin:0">Log History</h2>
           <span id="h-count" style="font-size:12px;color:var(--dim)"></span>
         </div>
-
-        <!-- FILTER BAR -->
         <div class="filter-bar">
           <div class="filter-row">
             <span class="filter-label">Type</span>
@@ -401,32 +285,26 @@ body.on #bnav{display:flex}
           </div>
           <div class="filter-row">
             <span class="filter-label">Date</span>
-            <input type="date" class="filter-date" id="ff-from" onchange="setFilter('from',this.value)" placeholder="From">
+            <input type="date" class="filter-date" id="ff-from" onchange="setFilter('from',this.value)">
             <span style="color:var(--dim);font-size:13px">→</span>
-            <input type="date" class="filter-date" id="ff-to"   onchange="setFilter('to',this.value)"   placeholder="To">
+            <input type="date" class="filter-date" id="ff-to"   onchange="setFilter('to',this.value)">
             <span class="filter-label" style="margin-left:8px">User</span>
             <input type="text" class="filter-search" id="ff-user" oninput="setFilter('user',this.value)" placeholder="Search by user...">
           </div>
         </div>
-
-        <!-- TABLE -->
         <div class="hist-wrap">
           <table class="hist-table">
-            <thead>
-              <tr>
-                <th style="width:44px">#</th>
-                <th>Date &amp; Time</th>
-                <th>Type</th>
-                <th>Odometer</th>
-                <th class="r">Amount</th>
-                <th class="r col-hide">Liters</th>
-                <th class="col-hide">Logged By</th>
-                <th style="width:60px"></th>
-              </tr>
-            </thead>
-            <tbody id="h-tbody">
-              <tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Loading...</td></tr>
-            </tbody>
+            <thead><tr>
+              <th style="width:44px">#</th>
+              <th>Date &amp; Time</th>
+              <th>Type</th>
+              <th>Odometer</th>
+              <th class="r">Amount</th>
+              <th class="r col-hide">Liters</th>
+              <th class="col-hide">Logged By</th>
+              <th style="width:60px"></th>
+            </tr></thead>
+            <tbody id="h-tbody"><tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Loading...</td></tr></tbody>
           </table>
         </div>
         <div id="h-pgn" class="pgn"></div>
@@ -435,14 +313,12 @@ body.on #bnav{display:flex}
       <!-- DASHBOARD -->
       <div id="view-dashboard" class="view">
         <h2 class="vtitle">Analytics</h2>
-
         <div class="stats-grid">
           <div class="sc sc-c"><div class="sc-icon">💰</div><div class="sc-label">Total Spend</div><div class="sc-val" id="s-spent">₹0</div></div>
           <div class="sc sc-g"><div class="sc-icon">⛽</div><div class="sc-label">Total Fuel</div><div class="sc-val" id="s-liters">0 L</div></div>
           <div class="sc sc-a"><div class="sc-icon">📋</div><div class="sc-label">Total Logs</div><div class="sc-val" id="s-logs">0</div></div>
           <div class="sc sc-p"><div class="sc-icon">🏷️</div><div class="sc-label">Base Price</div><div class="sc-val" id="s-price">₹0</div></div>
         </div>
-
         <div class="hero">
           <div>
             <div class="hero-lbl">⚡ True Reserve-to-Reserve Efficiency</div>
@@ -450,35 +326,18 @@ body.on #bnav{display:flex}
             <p id="dash-sub">Loading telemetry...</p>
           </div>
           <div class="gauge-wrap">
-            <div class="gauge-ring" id="g-ring">
-              <div class="gauge-inner">
-                <div class="g-pct" id="g-pct">0%</div>
-                <div class="g-sub">Score</div>
-              </div>
-            </div>
+            <div class="gauge-ring" id="g-ring"><div class="gauge-inner"><div class="g-pct" id="g-pct">0%</div><div class="g-sub">Score</div></div></div>
           </div>
         </div>
-
         <div class="slabel">Maintenance Lifecycle</div>
         <div id="maint-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Awaiting vehicle data...</p></div>
-
         <div class="slabel">Efficiency Timeline</div>
         <div id="mh-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs.</p></div>
-
         <div class="slabel">Telemetry Charts</div>
         <div class="charts-grid">
-          <div>
-            <div class="chart-lbl">Mileage Trend (km/L)</div>
-            <div class="chart-box"><div id="ch-mileage"></div></div>
-          </div>
-          <div>
-            <div class="chart-lbl">Monthly Spend (₹)</div>
-            <div class="chart-box"><div id="ch-spend"></div></div>
-          </div>
-          <div>
-            <div class="chart-lbl">Cost Contribution by User</div>
-            <div class="chart-box"><div id="ch-user"></div></div>
-          </div>
+          <div><div class="chart-lbl">Mileage Trend (km/L)</div><div class="chart-box"><div id="ch-mileage"></div></div></div>
+          <div><div class="chart-lbl">Monthly Spend (₹)</div><div class="chart-box"><div id="ch-spend"></div></div></div>
+          <div><div class="chart-lbl">Cost Contribution by User</div><div class="chart-box"><div id="ch-user"></div></div></div>
         </div>
       </div>
 
@@ -492,133 +351,41 @@ body.on #bnav{display:flex}
         <div class="apanel on" id="ap-users">
           <div class="admin-layout">
             <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-                <span style="font-weight:700;font-size:15px">User Accounts</span>
-                <button class="btn btn-p btn-sm" onclick="openUserModal()">+ Add User</button>
-              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-weight:700;font-size:15px">User Accounts</span><button class="btn btn-p btn-sm" onclick="openUserModal()">+ Add User</button></div>
               <div id="user-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
             </div>
-            <div>
-              <div class="card" style="border-left:2px solid var(--danger)">
-                <h4>Audit Trail</h4>
-                <p style="margin-top:6px">All account changes, price updates, and data edits are recorded in the Audit_Log sheet with timestamp and user attribution.</p>
-              </div>
-            </div>
+            <div><div class="card" style="border-left:2px solid var(--danger)"><h4>Audit Trail</h4><p style="margin-top:6px">All account changes, price updates, and data edits are recorded in the Audit_Log sheet with timestamp and user attribution.</p></div></div>
           </div>
         </div>
         <div class="apanel" id="ap-vehicles">
           <div class="admin-layout">
             <div>
-              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-                <span style="font-weight:700;font-size:15px">Fleet Vehicles</span>
-                <button class="btn btn-p btn-sm" onclick="openVehModal()">+ Add Vehicle</button>
-              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-weight:700;font-size:15px">Fleet Vehicles</span><button class="btn btn-p btn-sm" onclick="openVehModal()">+ Add Vehicle</button></div>
               <div id="veh-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
             </div>
-            <div>
-              <div class="card" style="border-left:2px solid var(--green)">
-                <h4>Vehicle IDs</h4>
-                <p style="margin-top:6px">IDs are auto-generated from the vehicle name on creation (e.g. V-ACT-4821). They are permanent namespace keys for all logs and maintenance settings.</p>
-              </div>
-            </div>
+            <div><div class="card" style="border-left:2px solid var(--green)"><h4>Vehicle IDs</h4><p style="margin-top:6px">IDs are auto-generated from the vehicle name on creation (e.g. V-ACT-4821). They are permanent namespace keys for all logs and maintenance settings.</p></div></div>
           </div>
         </div>
       </div>
 
-    </div><!-- /main-scroll -->
-  </div><!-- /app-body -->
-</div><!-- /app -->
+    </div>
+  </div>
+</div>
 
 <!-- MODALS -->
-<div class="modal" id="price-modal">
-  <div class="mbox">
-    <div class="mtitle" style="color:var(--accent)">Update Fuel Price</div>
-    <label class="flabel">New Price per Liter (₹)</label>
-    <input type="number" id="m-price" step="0.01" inputmode="decimal">
-    <div class="macts"><button class="btn btn-g" onclick="closeM('price-modal')">Cancel</button><button class="btn btn-p" onclick="updatePrice()">Update</button></div>
-  </div>
-</div>
+<div class="modal" id="price-modal"><div class="mbox"><div class="mtitle" style="color:var(--accent)">Update Fuel Price</div><label class="flabel">New Price per Liter (₹)</label><input type="number" id="m-price" step="0.01" inputmode="decimal"><div class="macts"><button class="btn btn-g" onclick="closeM('price-modal')">Cancel</button><button class="btn btn-p" onclick="updatePrice()">Update</button></div></div></div>
+<div class="modal" id="edit-modal"><div class="mbox"><div class="mtitle" style="color:var(--accent)">Edit Record</div><input type="hidden" id="m-edit-id"><input type="hidden" id="m-edit-type"><label class="flabel">Odometer (km)</label><input type="number" id="m-edit-odo" inputmode="numeric" pattern="[0-9]*"><label class="flabel" id="m-edit-amt-lbl">Amount Paid (₹)</label><input type="number" id="m-edit-amt" inputmode="decimal"><div class="macts"><button class="btn btn-g" onclick="closeM('edit-modal')">Cancel</button><button class="btn btn-p" onclick="saveEdit()">Save Changes</button></div></div></div>
+<div class="modal" id="user-modal"><div class="mbox"><div class="mtitle" id="um-title" style="color:var(--amber)">Edit User</div><input type="hidden" id="um-row"><input type="hidden" id="um-orig"><label class="flabel">Username</label><input type="text" id="um-name"><label class="flabel">Role</label><select id="um-role"><option value="Admin">Admin</option><option value="User">User</option></select><label class="flabel">Password<span class="flabel-sub">(blank = keep current)</span></label><input type="password" id="um-pass"><div class="macts"><button class="btn btn-g" onclick="closeM('user-modal')">Cancel</button><button class="btn btn-d btn-auto" id="um-del" style="display:none" onclick="deleteUser()">Delete</button><button class="btn btn-auto" onclick="saveUser()" style="background:var(--amber);color:#000;font-weight:700">Save User</button></div></div></div>
+<div class="modal" id="veh-modal"><div class="mbox"><div class="mtitle" id="vm-title" style="color:var(--green)">Add Vehicle</div><input type="hidden" id="vm-id"><label class="flabel">Vehicle Name</label><input type="text" id="vm-name" placeholder="e.g. Activa 6G"><label class="flabel">Type</label><select id="vm-type"><option value="Bike">Bike / Scooter</option><option value="Car">Car</option><option value="Truck">Truck / Commercial</option><option value="Other">Other</option></select><label class="flabel">License Plate</label><input type="text" id="vm-plate" placeholder="e.g. TS09AB1234"><div class="macts"><button class="btn btn-g" onclick="closeM('veh-modal')">Cancel</button><button class="btn btn-d btn-auto" id="vm-del" style="display:none" onclick="deleteVeh()">Delete</button><button class="btn btn-auto" onclick="saveVeh()" style="background:var(--green);color:#000;font-weight:700">Save Vehicle</button></div></div></div>
+<div class="modal" id="cfm-modal"><div class="mbox" style="text-align:center;max-width:360px"><div id="cfm-icon" style="font-size:40px;margin-bottom:12px">⚠️</div><div id="cfm-title" class="mtitle" style="justify-content:center;display:flex"></div><p id="cfm-msg" style="font-size:14px;color:var(--muted);margin-bottom:6px"></p><div class="macts" style="justify-content:center"><button class="btn btn-g" id="cfm-no" style="flex:1">Cancel</button><button class="btn" id="cfm-ok" style="flex:1">Confirm</button></div></div></div>
 
-<div class="modal" id="edit-modal">
-  <div class="mbox">
-    <div class="mtitle" style="color:var(--accent)">Edit Record</div>
-    <input type="hidden" id="m-edit-id"><input type="hidden" id="m-edit-type">
-    <label class="flabel">Odometer (km)</label>
-    <input type="number" id="m-edit-odo" inputmode="numeric" pattern="[0-9]*">
-    <label class="flabel" id="m-edit-amt-lbl">Amount Paid (₹)</label>
-    <input type="number" id="m-edit-amt" inputmode="decimal">
-    <div class="macts"><button class="btn btn-g" onclick="closeM('edit-modal')">Cancel</button><button class="btn btn-p" onclick="saveEdit()">Save Changes</button></div>
-  </div>
-</div>
-
-<div class="modal" id="user-modal">
-  <div class="mbox">
-    <div class="mtitle" id="um-title" style="color:var(--amber)">Edit User</div>
-    <input type="hidden" id="um-row"><input type="hidden" id="um-orig">
-    <label class="flabel">Username</label><input type="text" id="um-name">
-    <label class="flabel">Role</label>
-    <select id="um-role"><option value="Admin">Admin</option><option value="User">User</option></select>
-    <label class="flabel">Password<span class="flabel-sub">(blank = keep current)</span></label>
-    <input type="password" id="um-pass">
-    <div class="macts">
-      <button class="btn btn-g" onclick="closeM('user-modal')">Cancel</button>
-      <button class="btn btn-d btn-auto" id="um-del" style="display:none" onclick="deleteUser()">Delete</button>
-      <button class="btn btn-auto" onclick="saveUser()" style="background:var(--amber);color:#000;font-weight:700">Save User</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="veh-modal">
-  <div class="mbox">
-    <div class="mtitle" id="vm-title" style="color:var(--green)">Add Vehicle</div>
-    <input type="hidden" id="vm-id">
-    <label class="flabel">Vehicle Name</label><input type="text" id="vm-name" placeholder="e.g. Activa 6G">
-    <label class="flabel">Type</label>
-    <select id="vm-type"><option value="Bike">Bike / Scooter</option><option value="Car">Car</option><option value="Truck">Truck / Commercial</option><option value="Other">Other</option></select>
-    <label class="flabel">License Plate</label><input type="text" id="vm-plate" placeholder="e.g. TS09AB1234">
-    <div class="macts">
-      <button class="btn btn-g" onclick="closeM('veh-modal')">Cancel</button>
-      <button class="btn btn-d btn-auto" id="vm-del" style="display:none" onclick="deleteVeh()">Delete</button>
-      <button class="btn btn-auto" onclick="saveVeh()" style="background:var(--green);color:#000;font-weight:700">Save Vehicle</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="cfm-modal">
-  <div class="mbox" style="text-align:center;max-width:360px">
-    <div id="cfm-icon" style="font-size:40px;margin-bottom:12px">⚠️</div>
-    <div id="cfm-title" class="mtitle" style="justify-content:center;display:flex"></div>
-    <p id="cfm-msg" style="font-size:14px;color:var(--muted);margin-bottom:6px"></p>
-    <div class="macts" style="justify-content:center">
-      <button class="btn btn-g" id="cfm-no" style="flex:1">Cancel</button>
-      <button class="btn" id="cfm-ok" style="flex:1">Confirm</button>
-    </div>
-  </div>
-</div>
-
-<!-- BOTTOM NAV (mobile) -->
 <nav id="bnav">
-  <div class="ni on" id="ni-entry" onclick="navTo('entry')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
-    <span>Entry</span>
-  </div>
-  <div class="ni" id="ni-history" onclick="navTo('history')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    <span>History</span>
-  </div>
-  <div class="ni" id="ni-dashboard" onclick="navTo('dashboard')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-    <span>Dashboard</span>
-  </div>
-  <div class="ni hid" id="ni-admin" onclick="navTo('admin')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    <span>Admin</span>
-  </div>
+  <div class="ni on" id="ni-entry" onclick="navTo('entry')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg><span>Entry</span></div>
+  <div class="ni" id="ni-history" onclick="navTo('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>History</span></div>
+  <div class="ni" id="ni-dashboard" onclick="navTo('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Dashboard</span></div>
+  <div class="ni hid" id="ni-admin" onclick="navTo('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Admin</span></div>
 </nav>
-
-<button id="stb" onclick="sTop()">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
-</button>
+<button id="stb" onclick="sTop()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg></button>
 
 <script>
 const API="https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
@@ -628,7 +395,7 @@ let hPage=0,chM,chS,chU;
 let tQ=[],tOn=false;
 let fType='ALL',fFrom='',fTo='',fUser='';
 
-// ISSUE 3 FIX: Date display utility — "28-05-2026" → "28/05/2026 08:48:30"
+// ISSUE 3: Date display — "28-05-2026" → "28/05/2026", time passed through as-is
 function fmtDT(date,time){return(date||'').replace(/-/g,'/')+(time?' '+time:'')}
 
 // TOAST
@@ -647,7 +414,7 @@ const LC={refresh:{m:'Refreshing Data…',s:'Fetching records from Sheets'},logg
 function showL(t='def'){const c=LC[t]||LC.def;document.getElementById('l-msg').innerText=c.m;document.getElementById('l-sub').innerText=c.s;document.getElementById('loader').style.display='flex'}
 function hideL(){document.getElementById('loader').style.display='none'}
 
-// CONFIRM MODAL (BUG-06)
+// CONFIRM MODAL
 function confirm2(title,msg,ok='Confirm',danger=false,icon='⚠️'){
   return new Promise(res=>{
     document.getElementById('cfm-icon').innerText=icon;
@@ -663,7 +430,7 @@ function confirm2(title,msg,ok='Confirm',danger=false,icon='⚠️'){
 }
 function closeM(id){document.getElementById(id).style.display='none'}
 
-// NAV — syncs sidebar + bottom nav together
+// NAV — syncs sidebar + bottom nav
 function navTo(t){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
@@ -682,7 +449,6 @@ function switchTab(t){
   document.getElementById('at-'+t).classList.add('on');
   document.getElementById('ap-'+t).classList.add('on');
 }
-
 const scrollEl=document.getElementById('main-scroll');
 scrollEl.addEventListener('scroll',()=>{document.getElementById('stb').style.display=scrollEl.scrollTop>200?'flex':'none'});
 function sTop(){scrollEl.scrollTo({top:0,behavior:'smooth'})}
@@ -730,10 +496,7 @@ function boot(){
   CU=p;document.body.classList.add('on');
   document.getElementById('d-user').innerText=p.username;
   document.getElementById('sb-user-chip').innerText=p.username;
-  if(p.role==='Admin'){
-    document.getElementById('ni-admin').classList.remove('hid');
-    document.getElementById('sb-admin').classList.remove('hid');
-  }
+  if(p.role==='Admin'){document.getElementById('ni-admin').classList.remove('hid');document.getElementById('sb-admin').classList.remove('hid')}
   navTo('entry');fetchInit();setTimeout(syncQ,2000);
   if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
 }
@@ -747,8 +510,7 @@ async function fetchInit(ref=false){
   const sv=localStorage.getItem('ft_veh'),sel=document.getElementById('ev'),pv=sel.value;
   sel.innerHTML=gVeh.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
   if(sv&&gVeh.some(v=>v.id===sv))sel.value=sv;else if(pv&&gVeh.some(v=>v.id===pv))sel.value=pv;
-  renderHist();
-  if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
+  renderHist();if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
 }
 
 // ENTRY
@@ -778,19 +540,14 @@ async function submitEntry(){
   else{document.getElementById('e-odo').value='';document.getElementById('e-amt').value=''}
 }
 
-// ── HISTORY TABLE + FILTERS (ISSUE 1) ────────────────────────────────────────
+// HISTORY TABLE + FILTERS
 function setFilter(key,val){
-  if(key==='type'){fType=val}
-  if(key==='from'){fFrom=val}
-  if(key==='to'){fTo=val}
-  if(key==='user'){fUser=val}
+  if(key==='type')fType=val;if(key==='from')fFrom=val;if(key==='to')fTo=val;if(key==='user')fUser=val;
   hPage=0;renderHist();
 }
 function resetFilters(){
   fType='ALL';fFrom='';fTo='';fUser='';
-  document.getElementById('ff-from').value='';
-  document.getElementById('ff-to').value='';
-  document.getElementById('ff-user').value='';
+  document.getElementById('ff-from').value='';document.getElementById('ff-to').value='';document.getElementById('ff-user').value='';
   hPage=0;renderHist();
 }
 function getFiltered(){
@@ -805,15 +562,12 @@ function getFiltered(){
   });
 }
 function renderHist(){
-  // Sync filter type buttons
   document.getElementById('ff-all').className='ftbtn'+(fType==='ALL'?' on':'');
   document.getElementById('ff-fueling').className='ftbtn ftbtn-fuel'+(fType==='FUELING'?' on':'');
   document.getElementById('ff-reserve').className='ftbtn ftbtn-res'+(fType==='RESERVE'?' on':'');
-
   const filtered=getFiltered(),total=filtered.length,tp=Math.ceil(total/PG);
   if(hPage>=tp)hPage=Math.max(0,tp-1);
   document.getElementById('h-count').innerText=total?total+' entries':'No entries match filters';
-
   const slice=filtered.slice(hPage*PG,(hPage+1)*PG);
   let rows='';
   slice.forEach((h,i)=>{
@@ -821,7 +575,6 @@ function renderHist(){
     const tbadge=isFuel?'<span class="type-badge fuel">⛽ Fueling</span>':'<span class="type-badge res">⚠️ Reserve</span>';
     const amt=isFuel?`<span style="color:var(--text);font-weight:600">₹${parseFloat(h.amount).toFixed(2)}</span>`:'<span style="color:var(--dim)">—</span>';
     const lit=isFuel?`${parseFloat(h.liters).toFixed(2)} L`:'<span style="color:var(--dim)">—</span>';
-    // ISSUE 3 FIX: Display date as dd/MM/yyyy HH:mm(:ss)
     rows+=`<tr>
       <td style="color:var(--dim);font-size:12px">${hPage*PG+i+1}</td>
       <td style="font-size:13px;color:var(--text)">${fmtDT(h.date,h.time)}</td>
@@ -834,7 +587,6 @@ function renderHist(){
     </tr>`;
   });
   document.getElementById('h-tbody').innerHTML=rows||`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No logs match the current filters.</td></tr>`;
-
   let pg='';
   if(tp>1){
     pg+=`<button class="pbtn" onclick="pgTo(${hPage-1})" ${hPage===0?'disabled':''}>← Prev</button>`;
@@ -874,7 +626,7 @@ async function updatePrice(){
   if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+// DASHBOARD
 function renderDash(){
   const v=document.getElementById('ev').value;
   const vl=gHist.filter(h=>h.vehicleId===v),fl=vl.filter(h=>h.logType==='FUELING');
@@ -888,13 +640,13 @@ function anim(id,target,pre,suf,cur){
   const el=document.getElementById(id);if(!el)return;
   const s=performance.now(),d=900,tick=now=>{
     const t=Math.min((now-s)/d,1),e=1-Math.pow(1-t,3),val=e*target;
-    el.innerText=pre+(cur?Math.floor(val).toLocaleString('en-IN'):Math.floor(val).toLocaleString('en-IN'))+suf;
+    el.innerText=pre+Math.floor(val).toLocaleString('en-IN')+suf;
     if(t<1)requestAnimationFrame(tick);
     else el.innerText=pre+(cur?target.toLocaleString('en-IN',{maximumFractionDigits:2}):target.toFixed(suf===' L'?2:0))+suf;
   };requestAnimationFrame(tick);
 }
 
-// ISSUE 2 FIX: >= start (inclusive) and < end (exclusive)
+// ISSUE 2 FIX: >= start (inclusive), < end (exclusive)
 function calcMileage(v,vl){
   const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
   const km=document.getElementById('dash-km'),sub=document.getElementById('dash-sub');
@@ -903,9 +655,7 @@ function calcMileage(v,vl){
   const dist=parseFloat(end.odo)-parseFloat(start.odo);
   let fuel=0;
   vl.forEach(h=>{
-    if(h.logType==='FUELING'&&
-       parseFloat(h.odo)>=parseFloat(start.odo)&&   // FIXED: was >
-       parseFloat(h.odo)< parseFloat(end.odo))       // FIXED: was <=
+    if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(start.odo)&&parseFloat(h.odo)<parseFloat(end.odo))
       fuel+=parseFloat(h.liters)||0;
   });
   if(fuel>0&&dist>0){
@@ -923,41 +673,73 @@ function setGauge(pct,color){
   document.getElementById('g-pct').innerText=Math.round(pct)+'%';
 }
 
-// ISSUE 4 FIX: Null check for never-recorded services
+// ISSUE 4 FIX: Maintenance with null-safe check + history placeholder
 function renderMaint(v,vl){
   if(!v||!vl.length)return;
   const odo=Math.max(...vl.map(h=>parseFloat(h.odo)||0));
-  // Vehicle-specific key first, then generic fallback, then null if neither exists
   const lubeKey=`LAST_LUBE_ODO_${v}`,oilKey=`LAST_OIL_ODO_${v}`;
   const lubeOdo=gSet[lubeKey]!==undefined?parseFloat(gSet[lubeKey]):gSet['LAST_LUBE_ODO']!==undefined?parseFloat(gSet['LAST_LUBE_ODO']):null;
   const oilOdo =gSet[oilKey] !==undefined?parseFloat(gSet[oilKey]) :gSet['LAST_OIL_ODO'] !==undefined?parseFloat(gSet['LAST_OIL_ODO']) :null;
-  document.getElementById('maint-area').innerHTML=`<div class="maint-grid">${mc('⛓️ Chain Lube','500 km',lubeOdo,odo,v,'LUBE')}${mc('🛢️ Engine Oil','3,000 km',oilOdo,odo,v,'OIL')}</div>`;
+  document.getElementById('maint-area').innerHTML=`<div class="maint-grid">
+    ${mc('⛓️ Chain Lube','500 km',lubeOdo,odo,v,'LUBE','lube-hist')}
+    ${mc('🛢️ Engine Oil','3,000 km',oilOdo,odo,v,'OIL','oil-hist')}
+  </div>`;
+  // Fire history fetch after cards render — non-blocking
+  fetchSvcHist(v);
 }
-function mc(lbl,intv,lastOdo,curOdo,v,t){
+function mc(lbl,intv,lastOdo,curOdo,v,t,histId){
   const interval=t==='LUBE'?500:3000;
   if(lastOdo===null){
-    // Never recorded — show a "Set baseline" prompt instead of misleading 100% bar
     return`<div class="maint-card"><div class="maint-hdr"><div>
       <p style="font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${lbl} · Every ${intv}</p>
       <p style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--dim)">Not yet recorded</p>
-      <p style="font-size:11px;color:var(--dim);margin-top:4px">Click Mark Done after your next service to set the baseline.</p>
-    </div>
-    <button class="btn btn-g btn-sm" onclick="markSvc('${t}',${curOdo},'${v}')">Set Baseline</button></div>
-    <div class="pbar-bg"><div class="pbar-fill" style="width:0%;background:var(--dim)"></div></div></div>`;
+      <p style="font-size:11px;color:var(--dim);margin-top:4px">Click Set Baseline after your next service.</p>
+    </div><button class="btn btn-g btn-sm" onclick="markSvc('${t}',${curOdo},'${v}')">Set Baseline</button></div>
+    <div class="pbar-bg"><div class="pbar-fill" style="width:0%;background:var(--dim)"></div></div>
+    <div id="${histId}"><p style="font-size:11px;color:var(--dim);margin-top:8px">Loading history...</p></div></div>`;
   }
   const diff=Math.max(0,curOdo-lastOdo),pct=Math.min(100,(diff/interval)*100);
   const col=pct>=100?'var(--danger)':pct>=80?'var(--amber)':'var(--green)';
-  // ISSUE 4 FIX: Show last service ODO so user can see previous reading
-  const lastStr=`Last service at ${lastOdo.toLocaleString()} km`;
   const remaining=diff<interval?`${(interval-diff).toFixed(0)} km remaining`:'Service overdue';
   return`<div class="maint-card"><div class="maint-hdr"><div>
     <p style="font-size:10px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">${lbl} · Every ${intv}</p>
     <p style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:${col}">${Math.round(diff).toLocaleString()} <span style="font-size:12px;font-weight:400;color:var(--muted)">km since last</span></p>
-    <p class="svc-info">${lastStr} · <span style="color:${col}">${remaining}</span></p>
-  </div>
-  <button class="btn btn-g btn-sm" onclick="markSvc('${t}',${curOdo},'${v}')">Mark Done</button></div>
-  <div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div></div>`;
+    <p class="svc-info">Last at ${lastOdo.toLocaleString()} km · <span style="color:${col}">${remaining}</span></p>
+  </div><button class="btn btn-g btn-sm" onclick="markSvc('${t}',${curOdo},'${v}')">Mark Done</button></div>
+  <div class="pbar-bg"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div>
+  <div id="${histId}"><p style="font-size:11px;color:var(--dim);margin-top:8px">Loading history...</p></div></div>`;
 }
+
+// Fetch & inject service history into already-rendered cards
+async function fetchSvcHist(v){
+  const r=await api({action:'getServiceHistory',vehicleId:v});
+  if(r.status!=='success')return;
+  injectSvcHist('lube-hist',r.lube,'⛓️');
+  injectSvcHist('oil-hist', r.oil, '🛢️');
+}
+function injectSvcHist(elId,records,icon){
+  const el=document.getElementById(elId);if(!el)return;
+  if(!records||!records.length){
+    el.innerHTML='<p style="font-size:11px;color:var(--dim);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">No service history recorded yet.</p>';
+    return;
+  }
+  let html='<div class="svc-hist"><div class="svc-hist-title">'+icon+' Service History</div>';
+  records.forEach((rec,i)=>{
+    const odoStr=rec.odo?rec.odo.toLocaleString()+' km':'Unknown ODO';
+    // Parse ISO timestamp to dd/MM/yyyy
+    let dateStr='—';
+    if(rec.timestamp){
+      try{const d=new Date(rec.timestamp);dateStr=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}catch(e){}
+    }
+    html+=`<div class="svc-hist-row">
+      <span class="svc-hist-odo" style="color:${i===0?'var(--text)':'var(--muted)'}">${odoStr}</span>
+      <span class="svc-hist-meta">${dateStr} · ${rec.user}</span>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
 async function markSvc(t,odo,v){
   const lbl=t==='LUBE'?'Chain Lube':'Engine Oil';
   const ok=await confirm2(`Mark ${lbl} Done?`,`Log service at ${odo.toLocaleString()} km?`,'Mark Done',false,t==='LUBE'?'⛓️':'🛢️');
@@ -965,7 +747,7 @@ async function markSvc(t,odo,v){
   if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
 }
 
-// ISSUE 2 FIX: >= start (inclusive) and < end (exclusive) in all segments
+// ISSUE 2 FIX: >= start, < end in all segments
 function renderMileHist(v,vl){
   const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
   const area=document.getElementById('mh-area');
@@ -975,9 +757,7 @@ function renderMileHist(v,vl){
     const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
     let fuel=0;
     vl.forEach(h=>{
-      if(h.logType==='FUELING'&&
-         parseFloat(h.odo)>=parseFloat(s.odo)&&   // FIXED: was >
-         parseFloat(h.odo)< parseFloat(e.odo))     // FIXED: was <=
+      if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))
         fuel+=parseFloat(h.liters)||0;
     });
     if(fuel>0&&dist>0)segs.push({date:e.date,dist,fuel,eff:dist/fuel});
@@ -1006,39 +786,31 @@ function renderMileHist(v,vl){
     <div class="mini-stat"><div class="mini-stat-l">Best</div><div class="mini-stat-v" style="color:#10b981">${best.toFixed(1)} km/L</div></div>
     <div class="mini-stat"><div class="mini-stat-l">Average</div><div class="mini-stat-v" style="color:var(--accent)">${avg.toFixed(1)} km/L</div></div>
     <div class="mini-stat"><div class="mini-stat-l">Worst</div><div class="mini-stat-v" style="color:var(--amber)">${worst.toFixed(1)} km/L</div></div>
-  </div>
-  <div class="mh-wrap"><table class="mh-table">
+  </div><div class="mh-wrap"><table class="mh-table">
     <thead><tr><th>#</th><th>Date</th><th class="r">Distance</th><th class="r">Fuel</th><th class="r">km/L</th><th class="c">Grade</th></tr></thead>
     <tbody>${rows}</tbody>
   </table></div>`;
 }
 
-// CHARTS — BUG-05 FIX + all 3 in same grid
+// CHARTS — all 3 in same grid, BUG-05 sort fixed
 function renderCharts(v,vl,fl){
   if(!window.ApexCharts)return;
   if(!vl.length){['ch-mileage','ch-spend','ch-user'].forEach(id=>{document.getElementById(id).innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No data yet.</p>'});return}
   const base={chart:{background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:700}},theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,.04)',strokeDashArray:4},tooltip:{theme:'dark'},xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}},yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}}};
-  // ISSUE 2 FIX applied here too
   const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
   const md=[];
   for(let i=1;i<res.length;i++){
     const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
-    let f=0;
-    vl.forEach(h=>{
-      if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))
-        f+=parseFloat(h.liters)||0;
-    });
+    let f=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))f+=parseFloat(h.liters)||0});
     if(f>0)md.push({x:fmtDT(e.date,''),y:parseFloat((dist/f).toFixed(1))});
   }
   if(chM)chM.destroy();
   chM=new ApexCharts(document.getElementById('ch-mileage'),{...base,series:[{name:'km/L',data:md}],chart:{...base.chart,type:'area',height:200},colors:['#00eeff'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},stroke:{curve:'smooth',width:2.5},markers:{size:md.length<=10?4:0,colors:['#00eeff'],strokeWidth:0},dataLabels:{enabled:false}});chM.render();
-  // Spend chart with chronological sort
   const sm={};
   fl.forEach(h=>{const p=h.date.split('-');if(p.length===3){const k=`${p[1]}/${p[2].slice(-2)}`,sk=`${p[2]}${p[1]}`;if(!sm[k])sm[k]={v:0,s:sk};sm[k].v+=parseFloat(h.amount)||0}});
   const sorted=Object.entries(sm).sort((a,b)=>a[1].s.localeCompare(b[1].s));
   if(chS)chS.destroy();
   chS=new ApexCharts(document.getElementById('ch-spend'),{...base,colors:['#10b981'],series:[{name:'₹ Spend',data:sorted.map(([,v])=>parseFloat(v.v.toFixed(2)))}],chart:{...base.chart,type:'bar',height:200},plotOptions:{bar:{borderRadius:5,columnWidth:'50%'}},dataLabels:{enabled:false},xaxis:{...base.xaxis,categories:sorted.map(([k])=>k)}});chS.render();
-  // User donut
   const um={};fl.forEach(h=>{if(!um[h.loggedBy])um[h.loggedBy]=0;um[h.loggedBy]+=parseFloat(h.amount)||0});
   if(chU)chU.destroy();
   chU=new ApexCharts(document.getElementById('ch-user'),{...base,colors:['#00eeff','#10b981','#f59e0b','#a855f7','#ef4444'],series:Object.values(um).map(v=>parseFloat(v.toFixed(2))),labels:Object.keys(um),chart:{...base.chart,type:'donut',height:220},stroke:{colors:['#09090b'],width:2},plotOptions:{pie:{donut:{size:'68%',labels:{show:true,total:{show:true,label:'Total',color:'#8b8b99',fontSize:'11px',formatter:w=>'₹'+w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString('en-IN',{maximumFractionDigits:0})}}}}},dataLabels:{enabled:false},legend:{position:'bottom',labels:{colors:'#8b8b99'},fontSize:'11px'}});chU.render();
