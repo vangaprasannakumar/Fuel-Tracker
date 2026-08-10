@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Fuel Tracker</title>
     <meta name="theme-color" content="#000000">
-    <meta name="app-version" content="20260530">
+    <meta name="app-version" content="20260531">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
@@ -22,19 +22,21 @@ body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;bac
 @keyframes slideIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes gshift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
-@keyframes countUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 #loader{position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.88);backdrop-filter:blur(20px);display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px}
 .ring{width:46px;height:46px;border:3px solid rgba(0,238,255,.1);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite}
 #toast{position:fixed;top:18px;left:50%;transform:translateX(-50%) translateY(-110px);background:rgba(16,185,129,.95);backdrop-filter:blur(16px);color:#fff;padding:12px 22px;border-radius:50px;z-index:100000;transition:all .35s var(--spring);font-weight:600;font-size:14px;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(16,185,129,.3);display:flex;align-items:center;gap:8px}
 #toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 #toast.err{background:rgba(239,68,68,.95);box-shadow:0 8px 32px rgba(239,68,68,.3)}
+/* PWA INSTALL BANNER */
+#install-banner{display:none;position:fixed;bottom:88px;left:50%;transform:translateX(-50%);background:rgba(9,9,11,.97);border:1px solid rgba(0,238,255,.18);border-radius:18px;padding:12px 18px;z-index:990;align-items:center;gap:12px;max-width:340px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,.7);backdrop-filter:blur(12px)}
 #login-wrap{display:flex;align-items:center;justify-content:center;width:100%;height:100%;position:relative;z-index:1}
 body.on #login-wrap{display:none}
 #login-box{width:100%;max-width:380px;margin:16px;background:rgba(9,9,11,.92);backdrop-filter:blur(24px);border:1px solid rgba(0,238,255,.09);border-radius:28px;padding:48px 36px;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.03);animation:fadeUp .5s var(--ease)}
 #login-box img{width:78px;height:78px;border-radius:20px;box-shadow:0 0 30px rgba(0,238,255,.18)}
 #login-box h2{font-family:'Syne',sans-serif;font-size:26px;color:var(--accent);margin:14px 0 26px;text-shadow:0 0 28px rgba(0,238,255,.35);letter-spacing:-.5px}
-input[type=text],input[type=password],input[type=number],input[type=date],select{width:100%;padding:13px 17px;margin:5px 0;border-radius:13px;border:1px solid var(--b2);background:rgba(0,0,0,.4);color:var(--text);font-family:'Outfit';font-size:16px!important;transition:all .25s var(--ease);outline:none}
-input:focus,select:focus{border-color:var(--accent);background:rgba(0,238,255,.02);box-shadow:0 0 0 3px rgba(0,238,255,.07)}
+input[type=text],input[type=password],input[type=number],input[type=date],select,textarea{width:100%;padding:13px 17px;margin:5px 0;border-radius:13px;border:1px solid var(--b2);background:rgba(0,0,0,.4);color:var(--text);font-family:'Outfit';font-size:16px!important;transition:all .25s var(--ease);outline:none}
+textarea{resize:none;height:72px;line-height:1.5}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:rgba(0,238,255,.02);box-shadow:0 0 0 3px rgba(0,238,255,.07)}
 .btn{width:100%;padding:13px;border:none;border-radius:13px;font-family:'Outfit';font-size:15px;font-weight:700;cursor:pointer;margin-top:10px;transition:all .2s var(--ease)}
 .btn-p{background:var(--accent);color:#000;box-shadow:0 4px 20px rgba(0,238,255,.22)}
 .btn-p:hover{background:#00d4e6;transform:translateY(-1px)}
@@ -58,20 +60,23 @@ body.on .app{display:flex}
 .app-body{display:flex;flex:1;overflow:hidden;min-height:0}
 #sidebar{display:none;width:var(--sidebar-w);flex-shrink:0;flex-direction:column;border-right:1px solid rgba(255,255,255,.04);padding:16px 12px 20px;overflow-y:auto;gap:4px;background:rgba(0,0,0,.3)}
 .sb-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--dim);padding:14px 10px 6px}
-.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);font-size:13px;font-weight:600;-webkit-tap-highlight-color:transparent}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);font-size:13px;font-weight:600;-webkit-tap-highlight-color:transparent;position:relative}
 .sb-item svg{width:18px;height:18px;flex-shrink:0}
 .sb-item:hover{color:var(--text);background:rgba(255,255,255,.04)}
 .sb-item.on{color:var(--accent);background:rgba(0,238,255,.08)}
 .sb-spacer{flex:1}
 .sb-footer{padding:12px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;justify-content:space-between;margin-top:auto}
+/* OFFLINE BADGE */
+.q-badge{position:absolute;top:6px;right:8px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;border-radius:50%;min-width:16px;height:16px;display:none;align-items:center;justify-content:center;padding:0 3px}
 .main-scroll{flex:1;overflow-y:auto;min-width:0;scroll-behavior:smooth}
 #bnav{display:none;position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:92%;max-width:420px;background:rgba(5,5,7,.96);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.055);border-radius:28px;padding:6px 4px calc(6px + env(safe-area-inset-bottom));justify-content:space-around;z-index:1000;box-shadow:0 16px 48px rgba(0,0,0,.8)}
 body.on #bnav{display:flex}
-.ni{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:20px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);flex:1;min-height:52px;-webkit-tap-highlight-color:transparent}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 10px;border-radius:20px;cursor:pointer;color:var(--muted);transition:all .2s var(--ease);flex:1;min-height:52px;-webkit-tap-highlight-color:transparent;position:relative}
 .ni svg{width:20px;height:20px}
 .ni span{font-size:10px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
 .ni.on{color:var(--accent);background:rgba(0,238,255,.08)}
 .ni.hid{display:none!important}
+.ni-badge{position:absolute;top:4px;right:8px;background:var(--danger);color:#fff;font-size:9px;font-weight:800;border-radius:50%;min-width:15px;height:15px;display:none;align-items:center;justify-content:center;padding:0 2px}
 .view{padding:20px 20px calc(110px + env(safe-area-inset-bottom));display:none;opacity:0}
 .view.on{display:block;opacity:1;animation:slideIn .3s var(--ease) forwards}
 .vtitle{font-family:'Syne',sans-serif;font-size:24px;letter-spacing:-.5px;margin-bottom:18px}
@@ -79,34 +84,28 @@ body.on #bnav{display:flex}
 .card:hover{border-color:rgba(255,255,255,.07)}
 .card h4{font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px}
 .card p{font-size:13px;color:var(--muted)}
+/* STAT CARDS — 5 cards */
 .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:18px}
 .sc{border-radius:20px;padding:16px;position:relative;overflow:hidden;transition:all .3s var(--ease)}
 .sc::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--scc),transparent);opacity:.7}
 .sc::before{content:'';position:absolute;inset:0;border-radius:20px;background:radial-gradient(circle at 0% 0%,var(--scg) 0%,transparent 70%);opacity:0;transition:opacity .3s}
-.sc:hover{transform:translateY(-2px)}
-.sc:hover::before{opacity:1}
+.sc:hover{transform:translateY(-2px)}.sc:hover::before{opacity:1}
 .sc-c{--scc:#00eeff;--scg:rgba(0,238,255,.08);background:linear-gradient(135deg,rgba(0,238,255,.07) 0%,rgba(9,9,11,.95) 55%);border:1px solid rgba(0,238,255,.1)}
 .sc-g{--scc:#10b981;--scg:rgba(16,185,129,.08);background:linear-gradient(135deg,rgba(16,185,129,.07) 0%,rgba(9,9,11,.95) 55%);border:1px solid rgba(16,185,129,.1)}
 .sc-a{--scc:#f59e0b;--scg:rgba(245,158,11,.08);background:linear-gradient(135deg,rgba(245,158,11,.07) 0%,rgba(9,9,11,.95) 55%);border:1px solid rgba(245,158,11,.1)}
 .sc-p{--scc:#a855f7;--scg:rgba(168,85,247,.08);background:linear-gradient(135deg,rgba(168,85,247,.07) 0%,rgba(9,9,11,.95) 55%);border:1px solid rgba(168,85,247,.1)}
+.sc-r{--scc:#ef4444;--scg:rgba(239,68,68,.08);background:linear-gradient(135deg,rgba(239,68,68,.07) 0%,rgba(9,9,11,.95) 55%);border:1px solid rgba(239,68,68,.1)}
 .sc-icon{font-size:20px;margin-bottom:8px}
 .sc-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim);margin-bottom:4px}
-.sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1;animation:countUp .5s var(--ease)}
-/* MONTH FILTER BAR */
-.dash-period-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
-.period-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim)}
-.period-select{width:auto;padding:7px 14px;margin:0;font-size:13px!important;border-radius:10px;background:rgba(0,0,0,.4);border:1px solid var(--b2);color:var(--text);font-family:'Outfit';cursor:pointer;flex-shrink:0}
-.period-badge{font-size:11px;color:var(--dim);font-weight:500}
+.sc-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);line-height:1.1}
 .hero{background:linear-gradient(-45deg,#000d11,#001c22,#00111a,#000);background-size:400% 400%;animation:gshift 12s ease infinite;border-radius:24px;border:1px solid rgba(0,238,255,.11);box-shadow:0 0 60px rgba(0,238,255,.04),inset 0 1px 0 rgba(0,238,255,.07);padding:20px 24px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;gap:16px;position:relative;overflow:hidden}
 .hero::after{content:'⚡';position:absolute;top:-10px;right:120px;font-size:110px;opacity:.025;pointer-events:none}
 .hero-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--accent);margin-bottom:8px;opacity:.8}
 #dash-km{font-family:'Syne',sans-serif;font-size:44px;font-weight:800;line-height:1;color:var(--text);letter-spacing:-1px;text-shadow:0 0 40px rgba(0,238,255,.12)}
-#dash-km.good{color:var(--green);text-shadow:0 0 40px rgba(16,185,129,.18)}
-#dash-km.warn{color:var(--amber);text-shadow:0 0 40px rgba(245,158,11,.18)}
-#dash-km.poor{color:var(--danger);text-shadow:0 0 40px rgba(239,68,68,.18)}
+#dash-km.good{color:var(--green)}#dash-km.warn{color:var(--amber)}#dash-km.poor{color:var(--danger)}
 #dash-sub{font-size:12px;color:var(--muted);margin-top:7px}
 .gauge-wrap{flex-shrink:0;display:flex;flex-direction:column;align-items:center;gap:4px}
-.gauge-ring{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;transition:all 1.2s var(--ease)}
+.gauge-ring{width:96px;height:96px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 1.2s var(--ease)}
 .gauge-inner{width:70px;height:70px;background:#08080e;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;position:relative;z-index:1}
 .g-pct{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text)}
 .g-sub{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
@@ -127,11 +126,10 @@ body.on #bnav{display:flex}
 .mh-wrap{overflow-x:auto;border-radius:16px;border:1px solid rgba(255,255,255,.04);background:rgba(9,9,11,.5)}
 .mh-table{width:100%;border-collapse:collapse}
 .mh-table th{padding:11px 13px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,.04)}
-.mh-table td{padding:11px 13px;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,.02);transition:background .15s}
+.mh-table td{padding:11px 13px;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,.02)}
 .mh-table tr:last-child td{border-bottom:none}
 .mh-table tr:hover td{background:rgba(255,255,255,.015)}
-.mh-table .r{text-align:right}
-.mh-table .c{text-align:center}
+.mh-table .r{text-align:right}.mh-table .c{text-align:center}
 .eff-val{font-family:'Syne',sans-serif;font-size:16px;font-weight:700}
 .gbadge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:800;font-family:'Syne',sans-serif;border:1px solid;letter-spacing:.4px}
 .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
@@ -141,6 +139,9 @@ body.on #bnav{display:flex}
 .chart-box{background:rgba(9,9,11,.4);border:1px solid rgba(255,255,255,.03);border-radius:16px;padding:14px 8px;margin-bottom:16px}
 .chart-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin-bottom:8px;padding-left:8px}
 .charts-grid{display:grid;grid-template-columns:1fr;gap:0}
+.period-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.period-select{width:auto;padding:7px 14px;margin:0;font-size:13px!important;border-radius:10px;cursor:pointer;flex-shrink:0}
+/* HISTORY */
 .filter-bar{background:rgba(9,9,11,.7);border:1px solid rgba(255,255,255,.04);border-radius:16px;padding:14px 16px;margin-bottom:16px}
 .filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
 .filter-row:last-child{margin-bottom:0}
@@ -152,21 +153,24 @@ body.on #bnav{display:flex}
 .ftbtn-res.on{background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25);color:var(--amber)}
 .filter-date{width:auto;flex:1;min-width:120px;padding:8px 12px;margin:0;font-size:13px!important;color-scheme:dark}
 .filter-search{flex:1;min-width:100px;padding:8px 12px;margin:0;font-size:13px!important}
-.reset-btn{padding:6px 12px;border-radius:10px;border:1px solid var(--b2);background:transparent;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit';white-space:nowrap}
+.reset-btn{padding:6px 12px;border-radius:10px;border:1px solid var(--b2);background:transparent;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit'}
 .reset-btn:hover{color:var(--muted);border-color:var(--border)}
 .hist-wrap{overflow-x:auto;border-radius:16px;border:1px solid rgba(255,255,255,.04);background:rgba(9,9,11,.5)}
 .hist-table{width:100%;border-collapse:collapse;white-space:nowrap}
-.hist-table th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.2);position:sticky;top:0;z-index:2}
+.hist-table th{padding:11px 14px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--dim);border-bottom:1px solid rgba(255,255,255,.05);background:rgba(0,0,0,.2);position:sticky;top:0;z-index:2;cursor:pointer;user-select:none;transition:color .15s}
+.hist-table th:hover{color:var(--muted)}
 .hist-table th.r,.hist-table td.r{text-align:right}
 .hist-table td{padding:11px 14px;font-size:13px;color:var(--muted);border-bottom:1px solid rgba(255,255,255,.025);transition:background .15s}
 .hist-table tr:last-child td{border-bottom:none}
 .hist-table tr:hover td{background:rgba(255,255,255,.018)}
-.type-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:.2px}
+.type-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:8px;font-size:12px;font-weight:700}
 .type-badge.fuel{background:rgba(0,238,255,.08);color:var(--accent);border:1px solid rgba(0,238,255,.15)}
 .type-badge.res{background:rgba(245,158,11,.08);color:var(--amber);border:1px solid rgba(245,158,11,.15)}
 .odo-val{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
 .epill{font-size:11px;font-weight:700;padding:5px 10px;border-radius:8px;border:1px solid var(--b2);cursor:pointer;color:var(--muted);transition:.2s;background:transparent}
 .epill:hover{background:var(--border);color:var(--text)}
+.sort-icon{font-size:10px;margin-left:3px;opacity:.5}
+.sort-icon.on{opacity:1;color:var(--accent)}
 .pgn{display:flex;justify-content:center;align-items:center;gap:6px;margin-top:14px;padding-bottom:6px;flex-wrap:wrap}
 .pbtn{background:rgba(9,9,11,.8);border:1px solid var(--b2);color:var(--muted);border-radius:10px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:'Outfit'}
 .pbtn:hover{border-color:var(--accent);color:var(--accent)}
@@ -180,8 +184,7 @@ body.on #bnav{display:flex}
 .atabs{display:flex;gap:6px;margin-bottom:18px}
 .atab{padding:8px 18px;border-radius:12px;cursor:pointer;font-size:13px;font-weight:700;transition:.2s;border:1px solid var(--b2);color:var(--muted);background:transparent;font-family:'Outfit'}
 .atab.on{background:rgba(0,238,255,.07);border-color:rgba(0,238,255,.2);color:var(--accent)}
-.apanel{display:none}
-.apanel.on{display:block}
+.apanel{display:none}.apanel.on{display:block}
 .admin-layout{display:grid;grid-template-columns:1fr;gap:16px}
 .vrow{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:12px;border:1px solid var(--border);margin-bottom:8px;background:rgba(0,0,0,.28)}
 .badge{display:inline-block;padding:3px 9px;border-radius:7px;font-size:11px;font-weight:700;background:rgba(0,238,255,.08);color:var(--accent);border:1px solid rgba(0,238,255,.14)}
@@ -189,7 +192,7 @@ body.on #bnav{display:flex}
 .badge-p{background:rgba(168,85,247,.08);color:var(--purple);border-color:rgba(168,85,247,.14)}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);backdrop-filter:blur(8px);z-index:10000;justify-content:center;align-items:flex-end}
 @media(min-width:480px){.modal{align-items:center}}
-.mbox{background:var(--surface);border:1px solid rgba(255,255,255,.05);border-radius:24px 24px 0 0;padding:26px 22px 36px;width:100%;max-width:420px;animation:fadeUp .25s var(--spring)}
+.mbox{background:var(--surface);border:1px solid rgba(255,255,255,.05);border-radius:24px 24px 0 0;padding:26px 22px 36px;width:100%;max-width:440px;animation:fadeUp .25s var(--spring)}
 @media(min-width:480px){.mbox{border-radius:24px;padding:26px 22px}}
 .mtitle{font-family:'Syne',sans-serif;font-size:20px;margin-bottom:18px}
 .macts{display:flex;gap:10px;margin-top:20px}
@@ -198,14 +201,27 @@ body.on #bnav{display:flex}
 #cfm-modal .mbox{text-align:center;max-width:360px}
 #stb{display:none;position:fixed;bottom:95px;right:18px;z-index:998;background:rgba(9,9,11,.9);color:var(--muted);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;cursor:pointer;align-items:center;justify-content:center;transition:.2s;backdrop-filter:blur(10px)}
 #stb:hover{color:var(--accent);border-color:rgba(0,238,255,.3)}
-@media(min-width:768px){.stats-grid{grid-template-columns:repeat(4,1fr)}.maint-grid{grid-template-columns:1fr 1fr}.entry-layout{grid-template-columns:1.2fr .8fr;gap:24px}.admin-layout{grid-template-columns:1fr 1fr;gap:20px}.charts-grid{grid-template-columns:1fr 1fr}}
-@media(min-width:1200px){#sidebar{display:flex}body.on #bnav{display:none!important}#stb{bottom:24px}.view{padding:24px 32px 40px}.charts-grid{grid-template-columns:1fr 1fr 1fr}.hist-table .col-hide{display:table-cell}}
+/* RESPONSIVE */
+@media(min-width:640px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+@media(min-width:768px){.maint-grid{grid-template-columns:1fr 1fr}.entry-layout{grid-template-columns:1.2fr .8fr;gap:24px}.admin-layout{grid-template-columns:1fr 1fr;gap:20px}.charts-grid{grid-template-columns:1fr 1fr}}
+@media(min-width:1200px){#sidebar{display:flex}body.on #bnav{display:none!important}#stb{bottom:24px}.view{padding:24px 32px 40px}.charts-grid{grid-template-columns:1fr 1fr 1fr}.hist-table .col-hide{display:table-cell}.stats-grid{grid-template-columns:repeat(5,1fr)}}
 @media(max-width:1199px){.hist-table .col-hide{display:none}}
     </style>
 </head>
 <body>
 <div id="loader"><div class="ring"></div><div id="l-msg" style="font-size:15px;font-weight:600;color:var(--text);text-align:center"></div><div id="l-sub" style="font-size:12px;color:var(--muted)"></div></div>
 <div id="toast"><span id="t-icon"></span><span id="toast-msg"></span></div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="install-banner">
+  <span style="font-size:22px">📱</span>
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:700;color:var(--text)">Install Fuel Tracker</div>
+    <div style="font-size:11px;color:var(--muted)">Add to home screen for instant access</div>
+  </div>
+  <button onclick="installPWA()" class="btn-p btn-sm" style="flex-shrink:0">Install</button>
+  <button onclick="dismissInstall()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:20px;padding:0;line-height:1;margin-left:4px">×</button>
+</div>
 
 <div id="login-wrap">
   <div id="login-box">
@@ -231,7 +247,10 @@ body.on #bnav{display:flex}
   <div class="app-body">
     <aside id="sidebar">
       <div class="sb-section">Navigation</div>
-      <div class="sb-item on" id="sb-entry" onclick="navTo('entry')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg><span>Log Entry</span></div>
+      <div class="sb-item on" id="sb-entry" onclick="navTo('entry')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
+        <span>Log Entry</span><span class="q-badge" id="sb-qbadge"></span>
+      </div>
       <div class="sb-item" id="sb-history" onclick="navTo('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>Log History</span></div>
       <div class="sb-item" id="sb-dashboard" onclick="navTo('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Analytics</span></div>
       <div class="sb-item hid" id="sb-admin" onclick="navTo('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Admin</span></div>
@@ -241,7 +260,7 @@ body.on #bnav{display:flex}
 
     <div class="main-scroll" id="main-scroll">
 
-      <!-- ENTRY -->
+      <!-- ENTRY VIEW -->
       <div id="view-entry" class="view on">
         <h2 class="vtitle">Log Entry</h2>
         <div class="entry-layout">
@@ -254,7 +273,7 @@ body.on #bnav{display:flex}
             </div>
             <input type="hidden" id="e-type" value="FUELING">
             <label class="flabel">Odometer (km)</label>
-            <input type="number" id="e-odo" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 15420">
+            <input type="number" id="e-odo" inputmode="numeric" pattern="[0-9]*" placeholder="e.g. 36200">
             <div id="fuel-fields">
               <label class="flabel">Amount Paid (₹)</label>
               <input type="number" id="e-amt" inputmode="decimal" placeholder="e.g. 500">
@@ -263,7 +282,9 @@ body.on #bnav{display:flex}
                 <button onclick="openPriceModal()" style="background:none;border:none;color:var(--dim);font-size:12px;cursor:pointer;text-decoration:underline;font-family:'Outfit'">Edit Price</button>
               </div>
             </div>
-            <button class="btn btn-p" id="b-submit" onclick="submitEntry()" style="margin-top:26px">Log Entry</button>
+            <label class="flabel">Notes <span class="flabel-sub">(optional — highway, city, etc.)</span></label>
+            <input type="text" id="e-notes" placeholder="e.g. Highway run, City traffic...">
+            <button class="btn btn-p" id="b-submit" onclick="submitEntry()" style="margin-top:22px">Log Entry</button>
           </div>
           <div style="padding-top:44px">
             <div class="card" style="border-left:2px solid var(--accent)"><h4>Pump Side Assist</h4><p style="margin-top:6px">Entries validate against odometer history. Offline logs stage in an itemized queue and auto-sync on reconnect.</p></div>
@@ -272,11 +293,14 @@ body.on #bnav{display:flex}
         </div>
       </div>
 
-      <!-- HISTORY -->
+      <!-- HISTORY VIEW -->
       <div id="view-history" class="view">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
           <h2 class="vtitle" style="margin:0">Log History</h2>
-          <span id="h-count" style="font-size:12px;color:var(--dim)"></span>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span id="h-count" style="font-size:12px;color:var(--dim)"></span>
+            <button onclick="exportCSV()" class="btn-g btn-sm" style="border-radius:10px">⬇ Export CSV</button>
+          </div>
         </div>
         <div class="filter-bar">
           <div class="filter-row">
@@ -299,36 +323,42 @@ body.on #bnav{display:flex}
         <div class="hist-wrap">
           <table class="hist-table">
             <thead><tr>
-              <th style="width:44px">#</th><th>Date &amp; Time</th><th>Type</th><th>Odometer</th>
-              <th class="r">Amount</th><th class="r col-hide">Liters</th><th class="col-hide">Logged By</th><th style="width:60px"></th>
+              <th style="width:44px">#</th>
+              <th onclick="sortHist('date')">Date &amp; Time <span class="sort-icon on" id="si-date">↓</span></th>
+              <th onclick="sortHist('type')">Type <span class="sort-icon" id="si-type"></span></th>
+              <th onclick="sortHist('odo')">Odometer <span class="sort-icon" id="si-odo"></span></th>
+              <th class="r" onclick="sortHist('amount')">Amount <span class="sort-icon" id="si-amount"></span></th>
+              <th class="r col-hide">Liters</th>
+              <th class="col-hide">Logged By</th>
+              <th class="col-hide">Notes</th>
+              <th style="width:60px"></th>
             </tr></thead>
-            <tbody id="h-tbody"><tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted)">Loading...</td></tr></tbody>
+            <tbody id="h-tbody"><tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">Loading...</td></tr></tbody>
           </table>
         </div>
         <div id="h-pgn" class="pgn"></div>
       </div>
 
-      <!-- DASHBOARD -->
+      <!-- DASHBOARD VIEW -->
       <div id="view-dashboard" class="view">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px">
           <h2 class="vtitle" style="margin:0">Analytics</h2>
-          <!-- MONTH FILTER (Issue 1) -->
-          <div class="dash-period-bar" style="margin-bottom:0">
-            <span class="period-label">Period</span>
+          <div class="period-bar">
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim)">Vehicle</span>
+            <select id="dash-veh" class="period-select" onchange="onDashVehChange()"></select>
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--dim)">Period</span>
             <select id="dash-month" class="period-select" onchange="onMonthChange()">
               <option value="ALL">All Time</option>
             </select>
-            <span id="dash-period-badge" class="period-badge"></span>
           </div>
         </div>
-
         <div class="stats-grid">
           <div class="sc sc-c"><div class="sc-icon">💰</div><div class="sc-label">Total Spend</div><div class="sc-val" id="s-spent">₹0</div></div>
           <div class="sc sc-g"><div class="sc-icon">⛽</div><div class="sc-label">Total Fuel</div><div class="sc-val" id="s-liters">0 L</div></div>
           <div class="sc sc-a"><div class="sc-icon">📋</div><div class="sc-label">Total Logs</div><div class="sc-val" id="s-logs">0</div></div>
           <div class="sc sc-p"><div class="sc-icon">🏷️</div><div class="sc-label">Base Price</div><div class="sc-val" id="s-price">₹0</div></div>
+          <div class="sc sc-r"><div class="sc-icon">📍</div><div class="sc-label">Cost per km</div><div class="sc-val" id="s-cpm">₹--</div></div>
         </div>
-
         <div class="hero">
           <div>
             <div class="hero-lbl">⚡ True Reserve-to-Reserve Efficiency</div>
@@ -339,22 +369,30 @@ body.on #bnav{display:flex}
             <div class="gauge-ring" id="g-ring"><div class="gauge-inner"><div class="g-pct" id="g-pct">0%</div><div class="g-sub">Score</div></div></div>
           </div>
         </div>
-
         <div class="slabel">Maintenance Lifecycle</div>
         <div id="maint-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Awaiting vehicle data...</p></div>
-
         <div class="slabel">Efficiency Timeline</div>
         <div id="mh-area"><p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs.</p></div>
-
         <div class="slabel">Telemetry Charts</div>
         <div class="charts-grid">
-          <div><div class="chart-lbl">Mileage Trend (km/L)</div><div class="chart-box"><div id="ch-mileage"></div></div></div>
+          <div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-left:8px">
+              <span class="chart-lbl" style="margin-bottom:0">Mileage Trend (km/L)</span>
+              <div style="flex:1"></div>
+              <span style="font-size:11px;color:var(--dim)">Target:</span>
+              <input type="number" id="mileage-target" value="45" min="10" max="200" oninput="renderCharts(lastDashV,lastAllVl,lastFl)" style="width:62px;padding:4px 8px;margin:0;font-size:12px!important;border-radius:8px">
+              <span style="font-size:11px;color:var(--dim)">km/L</span>
+            </div>
+            <div class="chart-box"><div id="ch-mileage"></div></div>
+          </div>
           <div><div class="chart-lbl">Monthly Spend (₹)</div><div class="chart-box"><div id="ch-spend"></div></div></div>
           <div><div class="chart-lbl">Cost Contribution</div><div class="chart-box"><div id="ch-user"></div></div></div>
         </div>
+        <div class="slabel">Fuel Price History</div>
+        <div><div class="chart-lbl">₹ per Liter over Time</div><div class="chart-box"><div id="ch-price"></div></div></div>
       </div>
 
-      <!-- ADMIN -->
+      <!-- ADMIN VIEW -->
       <div id="view-admin" class="view">
         <h2 class="vtitle">Admin Controls</h2>
         <div class="atabs">
@@ -367,7 +405,7 @@ body.on #bnav{display:flex}
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-weight:700;font-size:15px">User Accounts</span><button class="btn btn-p btn-sm" onclick="openUserModal()">+ Add User</button></div>
               <div id="user-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
             </div>
-            <div><div class="card" style="border-left:2px solid var(--danger)"><h4>Audit Trail</h4><p style="margin-top:6px">All account changes, price updates, and data edits are recorded in the Audit_Log sheet with timestamp and user attribution.</p></div></div>
+            <div><div class="card" style="border-left:2px solid var(--danger)"><h4>Audit Trail</h4><p style="margin-top:6px">All account changes, price updates, and data edits are recorded in the Audit_Log sheet.</p></div></div>
           </div>
         </div>
         <div class="apanel" id="ap-vehicles">
@@ -376,7 +414,7 @@ body.on #bnav{display:flex}
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><span style="font-weight:700;font-size:15px">Fleet Vehicles</span><button class="btn btn-p btn-sm" onclick="openVehModal()">+ Add Vehicle</button></div>
               <div id="veh-list"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
             </div>
-            <div><div class="card" style="border-left:2px solid var(--green)"><h4>Vehicle IDs</h4><p style="margin-top:6px">IDs are auto-generated from the vehicle name (e.g. V-ACT-4821). They are permanent namespace keys for all logs and maintenance settings.</p></div></div>
+            <div><div class="card" style="border-left:2px solid var(--green)"><h4>Vehicle IDs</h4><p style="margin-top:6px">IDs are auto-generated from the vehicle name on creation. They are permanent namespace keys for all logs and maintenance settings.</p></div></div>
           </div>
         </div>
       </div>
@@ -387,13 +425,33 @@ body.on #bnav{display:flex}
 
 <!-- MODALS -->
 <div class="modal" id="price-modal"><div class="mbox"><div class="mtitle" style="color:var(--accent)">Update Fuel Price</div><label class="flabel">New Price per Liter (₹)</label><input type="number" id="m-price" step="0.01" inputmode="decimal"><div class="macts"><button class="btn btn-g" onclick="closeM('price-modal')">Cancel</button><button class="btn btn-p" onclick="updatePrice()">Update</button></div></div></div>
-<div class="modal" id="edit-modal"><div class="mbox"><div class="mtitle" style="color:var(--accent)">Edit Record</div><input type="hidden" id="m-edit-id"><input type="hidden" id="m-edit-type"><label class="flabel">Odometer (km)</label><input type="number" id="m-edit-odo" inputmode="numeric" pattern="[0-9]*"><label class="flabel" id="m-edit-amt-lbl">Amount Paid (₹)</label><input type="number" id="m-edit-amt" inputmode="decimal"><div class="macts"><button class="btn btn-g" onclick="closeM('edit-modal')">Cancel</button><button class="btn btn-p" onclick="saveEdit()">Save Changes</button></div></div></div>
+
+<div class="modal" id="edit-modal">
+  <div class="mbox">
+    <div class="mtitle" style="color:var(--accent)">Edit Record</div>
+    <input type="hidden" id="m-edit-id"><input type="hidden" id="m-edit-type">
+    <label class="flabel">Odometer (km)</label><input type="number" id="m-edit-odo" inputmode="numeric" pattern="[0-9]*">
+    <label class="flabel" id="m-edit-amt-lbl">Amount Paid (₹)</label><input type="number" id="m-edit-amt" inputmode="decimal">
+    <label class="flabel">Notes</label><input type="text" id="m-edit-notes" placeholder="Optional note...">
+    <div class="macts">
+      <button class="btn btn-g" onclick="closeM('edit-modal')">Cancel</button>
+      <button class="btn btn-d btn-auto" id="edit-del-btn" onclick="deleteEntry()">Delete</button>
+      <button class="btn btn-p btn-auto" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal" id="user-modal"><div class="mbox"><div class="mtitle" id="um-title" style="color:var(--amber)">Edit User</div><input type="hidden" id="um-row"><input type="hidden" id="um-orig"><label class="flabel">Username</label><input type="text" id="um-name"><label class="flabel">Role</label><select id="um-role"><option value="Admin">Admin</option><option value="User">User</option></select><label class="flabel">Password<span class="flabel-sub">(blank = keep current)</span></label><input type="password" id="um-pass"><div class="macts"><button class="btn btn-g" onclick="closeM('user-modal')">Cancel</button><button class="btn btn-d btn-auto" id="um-del" style="display:none" onclick="deleteUser()">Delete</button><button class="btn btn-auto" onclick="saveUser()" style="background:var(--amber);color:#000;font-weight:700">Save User</button></div></div></div>
+
 <div class="modal" id="veh-modal"><div class="mbox"><div class="mtitle" id="vm-title" style="color:var(--green)">Add Vehicle</div><input type="hidden" id="vm-id"><label class="flabel">Vehicle Name</label><input type="text" id="vm-name" placeholder="e.g. Activa 6G"><label class="flabel">Type</label><select id="vm-type"><option value="Bike">Bike / Scooter</option><option value="Car">Car</option><option value="Truck">Truck / Commercial</option><option value="Other">Other</option></select><label class="flabel">License Plate</label><input type="text" id="vm-plate" placeholder="e.g. TS09AB1234"><div class="macts"><button class="btn btn-g" onclick="closeM('veh-modal')">Cancel</button><button class="btn btn-d btn-auto" id="vm-del" style="display:none" onclick="deleteVeh()">Delete</button><button class="btn btn-auto" onclick="saveVeh()" style="background:var(--green);color:#000;font-weight:700">Save Vehicle</button></div></div></div>
+
 <div class="modal" id="cfm-modal"><div class="mbox" style="text-align:center;max-width:360px"><div id="cfm-icon" style="font-size:40px;margin-bottom:12px">⚠️</div><div id="cfm-title" class="mtitle" style="justify-content:center;display:flex"></div><p id="cfm-msg" style="font-size:14px;color:var(--muted);margin-bottom:6px"></p><div class="macts" style="justify-content:center"><button class="btn btn-g" id="cfm-no" style="flex:1">Cancel</button><button class="btn" id="cfm-ok" style="flex:1">Confirm</button></div></div></div>
 
 <nav id="bnav">
-  <div class="ni on" id="ni-entry" onclick="navTo('entry')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg><span>Entry</span></div>
+  <div class="ni on" id="ni-entry" onclick="navTo('entry')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8c0-1.1.9-2 2-2h4c1.1 0 2 .9 2 2v8"/><path d="M14 22V4c0-1.1-.9-2-2-2H6c-1.1 0-2 .9-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5"/></svg>
+    <span>Entry</span><span class="ni-badge" id="ni-qbadge"></span>
+  </div>
   <div class="ni" id="ni-history" onclick="navTo('history')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><span>History</span></div>
   <div class="ni" id="ni-dashboard" onclick="navTo('dashboard')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg><span>Dashboard</span></div>
   <div class="ni hid" id="ni-admin" onclick="navTo('admin')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Admin</span></div>
@@ -402,25 +460,22 @@ body.on #bnav{display:flex}
 
 <script>
 const API="https://script.google.com/macros/s/AKfycbyiELKtJjEdbvszLx0GWxncUSa_ckAnRigE3LTc785aIW5X_-tx-p8Os05DT-sC4ud6lQ/exec";
-const PG=30,CACHE_KEY='ft_cache',CACHE_TTL=1800000; // 30-min cache
-let CU={username:'',role:'',token:''},gPrice=0,gSet={},gVeh=[],gHist=[];
-let hPage=0,chM,chS,chU;
+const PG=30,CACHE_KEY='ft_cache',CACHE_TTL=1800000;
+let CU={username:'',role:'',token:''},gPrice=0,gSet={},gVeh=[],gHist=[],gPriceHist=[];
+let hPage=0,chM,chS,chU,chP;
 let tQ=[],tOn=false;
 let fType='ALL',fFrom='',fTo='',fUser='';
-let dashMonth='ALL'; // ← Issue 1: month filter state
+let dashMonth='ALL';
+let sortCol='date',sortDir='desc';
+let deferredInstall=null;
+// Cache last renderCharts args so target-line input can re-render without re-fetching
+let lastDashV='',lastAllVl=[],lastFl=[];
 
 // DATE UTILS
 function fmtDT(date,time){return(date||'').replace(/-/g,'/')+(time?' '+time:'')}
-// Short label for chart x-axis: "28-05-2026" → "28/05"
 function shortDate(date){const p=(date||'').split('-');return p.length>=2?`${p[0]}/${p[1]}`:''}
-// Month key from date: "28-05-2026" → "2026-05"
 function monthKey(date){const p=(date||'').split('-');return p.length===3?`${p[2]}-${p[1]}`:''}
-// Human label: "2026-05" → "May 2026"
-function monthLabel(ym){
-  if(!ym||ym==='ALL')return'All Time';
-  const[y,m]=ym.split('-');
-  return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+y;
-}
+function monthLabel(ym){if(!ym||ym==='ALL')return'All Time';const[y,m]=ym.split('-');return['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)-1]+' '+y}
 
 // TOAST
 function toast(msg,type='ok'){tQ.push({msg,type});runTQ()}
@@ -453,6 +508,18 @@ function confirm2(title,msg,ok='Confirm',danger=false,icon='⚠️'){
   });
 }
 function closeM(id){document.getElementById(id).style.display='none'}
+
+// PWA INSTALL
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;if(document.body.classList.contains('on'))showInstallBanner()});
+function showInstallBanner(){const b=document.getElementById('install-banner');if(b&&localStorage.getItem('ft_install_dismissed')!=='1')b.style.display='flex'}
+function dismissInstall(){localStorage.setItem('ft_install_dismissed','1');document.getElementById('install-banner').style.display='none'}
+async function installPWA(){if(!deferredInstall)return;deferredInstall.prompt();const{outcome}=await deferredInstall.userChoice;if(outcome==='accepted')dismissInstall();deferredInstall=null}
+
+// OFFLINE QUEUE BADGE
+function updateQBadge(){
+  const q=JSON.parse(localStorage.getItem('ft_q')||'[]');const n=q.length;
+  ['ni-qbadge','sb-qbadge'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.textContent=n;el.style.display=n>0?'flex':'none'});
+}
 
 // NAV
 function navTo(t){
@@ -487,7 +554,7 @@ async function api(payload){
     else if(CU.token&&d.status!=='error'){const s=localStorage.getItem('ft_u');if(s){const p=JSON.parse(s);p.e=Date.now()+(5.5*3600000);localStorage.setItem('ft_u',JSON.stringify(p))}}
     return d;
   }catch(e){
-    if(payload.action==='logEntry'){let q=JSON.parse(localStorage.getItem('ft_q')||'[]');q.push({payload,ts:Date.now()});localStorage.setItem('ft_q',JSON.stringify(q));toast('Offline — entry staged.','err');return{status:'offline_staged'}}
+    if(payload.action==='logEntry'){let q=JSON.parse(localStorage.getItem('ft_q')||'[]');q.push({payload,ts:Date.now()});localStorage.setItem('ft_q',JSON.stringify(q));updateQBadge();toast('Offline — entry staged.','err');return{status:'offline_staged'}}
     return{status:'error',message:'Network unavailable.'};
   }
 }
@@ -500,31 +567,31 @@ async function syncQ(){
   const rem=q.filter(i=>!ok.includes(i.ts));
   if(rem.length){localStorage.setItem('ft_q',JSON.stringify(rem));toast(rem.length+' items pending sync.','err')}
   else{localStorage.removeItem('ft_q');if(ok.length)toast(ok.length+' offline entries synced!')}
-  hideL();fetchInit();
+  updateQBadge();hideL();fetchInit();
 }
 window.addEventListener('online',syncQ);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&navigator.onLine)syncQ()});
 
-// ── ISSUE 3 FIX: CACHE + applyInitData ──────────────────────────────────────
-// applyInitData: extracted so it can be called by both fetchInit and restoreFromCache
+// CACHE
 function applyInitData(){
   document.getElementById('d-price').innerText=gPrice.toFixed(2);
-  const sv=localStorage.getItem('ft_veh'),sel=document.getElementById('ev'),pv=sel.value;
-  sel.innerHTML=gVeh.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
-  if(sv&&gVeh.some(v=>v.id===sv))sel.value=sv;else if(pv&&gVeh.some(v=>v.id===pv))sel.value=pv;
+  const sv=localStorage.getItem('ft_veh');
+  // Populate BOTH vehicle selectors
+  const opts=gVeh.map(v=>`<option value="${v.id}">${v.name}</option>`).join('');
+  const ev=document.getElementById('ev'),dv=document.getElementById('dash-veh');
+  const pv=ev.value,dpv=dv.value;
+  ev.innerHTML=opts;dv.innerHTML=opts;
+  if(sv&&gVeh.some(v=>v.id===sv)){ev.value=sv;dv.value=sv}
+  else{if(pv&&gVeh.some(v=>v.id===pv))ev.value=pv;if(dpv&&gVeh.some(v=>v.id===dpv))dv.value=dpv}
   renderHist();
   if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
 }
-
-// Restore from localStorage cache instantly (eliminates blank screen on refresh)
 function restoreFromCache(){
   try{
     const raw=localStorage.getItem(CACHE_KEY);if(!raw)return false;
-    const c=JSON.parse(raw);
-    if(!c||!c.vehicles||!c.history||Date.now()-c.ts>CACHE_TTL)return false;
-    gPrice=parseFloat(c.currentPrice)||0;gSet=c.settings||{};gVeh=c.vehicles;gHist=c.history;
-    applyInitData();
-    return true;
+    const c=JSON.parse(raw);if(!c||!c.vehicles||!c.history||Date.now()-c.ts>CACHE_TTL)return false;
+    gPrice=parseFloat(c.currentPrice)||0;gSet=c.settings||{};gVeh=c.vehicles;gHist=c.history;gPriceHist=c.priceHistory||[];
+    applyInitData();return true;
   }catch(e){return false}
 }
 
@@ -536,11 +603,7 @@ async function doLogin(){
   if(r.status==='success'){localStorage.setItem('ft_u',JSON.stringify({username:r.username,role:r.role,token:r.token,e:Date.now()+(5.5*3600000)}));boot()}
   else document.getElementById('l-err').innerText=r.message;
 }
-function logout(){
-  localStorage.removeItem('ft_u');
-  localStorage.removeItem(CACHE_KEY); // clear data cache on logout
-  location.reload();
-}
+function logout(){localStorage.removeItem('ft_u');localStorage.removeItem(CACHE_KEY);location.reload()}
 function boot(){
   const raw=localStorage.getItem('ft_u');if(!raw)return;
   const p=JSON.parse(raw);if(Date.now()>p.e)return logout();
@@ -548,22 +611,20 @@ function boot(){
   document.getElementById('d-user').innerText=p.username;
   document.getElementById('sb-user-chip').innerText=p.username;
   if(p.role==='Admin'){document.getElementById('ni-admin').classList.remove('hid');document.getElementById('sb-admin').classList.remove('hid')}
-  // ISSUE 3 FIX: Restore from cache IMMEDIATELY (instant render), then fetch fresh in background
+  updateQBadge();
   const hadCache=restoreFromCache();
   navTo('entry');
-  // Fetch fresh data — silent if cache already populated the UI
   fetchInit(false,hadCache);
   setTimeout(syncQ,2000);
+  setTimeout(()=>{if(deferredInstall)showInstallBanner()},3000);
   if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');
 }
 
-// INIT DATA — saves to cache after success
 async function fetchInit(ref=false,silent=false){
   if(ref)showL('refresh');
   const r=await api({action:'getInitData'});if(ref)hideL();if(r.status!=='success')return;
-  gPrice=parseFloat(r.currentPrice)||0;gSet=r.settings||{};gVeh=r.vehicles;gHist=r.history;
-  // Save to cache for instant restore next time
-  try{localStorage.setItem(CACHE_KEY,JSON.stringify({currentPrice:r.currentPrice,settings:r.settings,vehicles:r.vehicles,history:r.history,ts:Date.now()}))}catch(e){}
+  gPrice=parseFloat(r.currentPrice)||0;gSet=r.settings||{};gVeh=r.vehicles;gHist=r.history;gPriceHist=r.priceHistory||[];
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify({currentPrice:r.currentPrice,settings:r.settings,vehicles:r.vehicles,history:r.history,priceHistory:r.priceHistory,ts:Date.now()}))}catch(e){}
   applyInitData();
 }
 
@@ -579,47 +640,84 @@ document.getElementById('e-amt').addEventListener('input',e=>{
   document.getElementById('live-est').innerHTML=`Estimated: <strong style="color:var(--accent)">${est} L</strong> (at ₹<span id="d-price">${gPrice.toFixed(2)}</span>/L)`;
 });
 document.getElementById('ev').addEventListener('change',e=>{
-  localStorage.setItem('ft_veh',e.target.value);renderHist();
-  if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
+  const v=e.target.value;localStorage.setItem('ft_veh',v);
+  // Sync dashboard vehicle selector
+  const dv=document.getElementById('dash-veh');if(dv)dv.value=v;
+  renderHist();if(document.getElementById('view-dashboard').classList.contains('on'))renderDash();
 });
 async function submitEntry(){
   const t=document.getElementById('e-type').value,v=document.getElementById('ev').value;
   const o=document.getElementById('e-odo').value,a=document.getElementById('e-amt').value;
-  if(!v||!o||(t==='FUELING'&&!a))return toast('Fill all fields.','err');
+  const notes=document.getElementById('e-notes').value.trim();
+  if(!v||!o||(t==='FUELING'&&!a))return toast('Fill all required fields.','err');
+  // Reserve Hit confirmation
+  if(t==='RESERVE'){
+    const ok=await confirm2('Confirm Reserve Hit',`Log reserve hit at ${parseFloat(o).toLocaleString()} km?`,'Confirm Reserve',false,'⚠️');
+    if(!ok)return;
+  }
   showL('logging');
-  const r=await api({action:'logEntry',vehicleId:v,logType:t,odoReading:parseFloat(o),amountPaid:t==='FUELING'?parseFloat(a):0});
+  const r=await api({action:'logEntry',vehicleId:v,logType:t,odoReading:parseFloat(o),amountPaid:t==='FUELING'?parseFloat(a):0,notes});
   hideL();
-  if(r.status==='success'){toast(r.message);document.getElementById('e-odo').value='';document.getElementById('e-amt').value='';fetchInit()}
-  else if(r.status!=='offline_staged')toast(r.message,'err');
-  else{document.getElementById('e-odo').value='';document.getElementById('e-amt').value=''}
+  if(r.status==='success'){
+    toast(r.message);
+    document.getElementById('e-odo').value='';document.getElementById('e-amt').value='';document.getElementById('e-notes').value='';
+    fetchInit();
+  }else if(r.status!=='offline_staged'){toast(r.message,'err')}
+  else{document.getElementById('e-odo').value='';document.getElementById('e-amt').value='';document.getElementById('e-notes').value=''}
 }
 
-// HISTORY TABLE + FILTERS
+// HISTORY TABLE + SORT + FILTERS
 function setFilter(key,val){
   if(key==='type')fType=val;if(key==='from')fFrom=val;if(key==='to')fTo=val;if(key==='user')fUser=val;
   hPage=0;renderHist();
 }
 function resetFilters(){
-  fType='ALL';fFrom='';fTo='';fUser='';
+  fType='ALL';fFrom='';fTo='';fUser='';sortCol='date';sortDir='desc';
   document.getElementById('ff-from').value='';document.getElementById('ff-to').value='';document.getElementById('ff-user').value='';
   hPage=0;renderHist();
 }
 function getFiltered(){
-  const v=document.getElementById('ev').value;
+  const v=document.getElementById('dash-veh')&&document.getElementById('view-history').classList.contains('on')?document.getElementById('ev').value:document.getElementById('ev').value;
   return gHist.filter(h=>{
     if(v&&h.vehicleId!==v)return false;
     if(fType!=='ALL'&&h.logType!==fType)return false;
     if(fFrom){const[d,m,y]=(h.date||'').split('-');if(new Date(`${y}-${m}-${d}`)<new Date(fFrom))return false}
     if(fTo){const[d,m,y]=(h.date||'').split('-');if(new Date(`${y}-${m}-${d}`)>new Date(fTo))return false}
-    if(fUser&&!h.loggedBy.toLowerCase().includes(fUser.toLowerCase()))return false;
+    if(fUser&&!(h.loggedBy||'').toLowerCase().includes(fUser.toLowerCase()))return false;
     return true;
+  });
+}
+function sortHist(col){
+  if(sortCol===col)sortDir=sortDir==='asc'?'desc':'asc';
+  else{sortCol=col;sortDir=col==='date'?'desc':'asc'}
+  hPage=0;renderHist();
+}
+function getSorted(arr){
+  return[...arr].sort((a,b)=>{
+    let va,vb;
+    if(sortCol==='date'){va=a.date+a.time;vb=b.date+b.time}
+    else if(sortCol==='odo'){va=parseFloat(a.odo);vb=parseFloat(b.odo)}
+    else if(sortCol==='amount'){va=parseFloat(a.amount)||0;vb=parseFloat(b.amount)||0}
+    else if(sortCol==='type'){va=a.logType;vb=b.logType}
+    else{va=a.date;vb=b.date}
+    if(va<vb)return sortDir==='asc'?-1:1;
+    if(va>vb)return sortDir==='asc'?1:-1;
+    return 0;
+  });
+}
+function updateSortIcons(){
+  ['date','type','odo','amount'].forEach(c=>{
+    const el=document.getElementById('si-'+c);if(!el)return;
+    el.className='sort-icon'+(c===sortCol?' on':'');
+    el.textContent=c===sortCol?(sortDir==='asc'?'↑':'↓'):'';
   });
 }
 function renderHist(){
   document.getElementById('ff-all').className='ftbtn'+(fType==='ALL'?' on':'');
   document.getElementById('ff-fueling').className='ftbtn ftbtn-fuel'+(fType==='FUELING'?' on':'');
   document.getElementById('ff-reserve').className='ftbtn ftbtn-res'+(fType==='RESERVE'?' on':'');
-  const filtered=getFiltered(),total=filtered.length,tp=Math.ceil(total/PG);
+  updateSortIcons();
+  const filtered=getSorted(getFiltered()),total=filtered.length,tp=Math.ceil(total/PG);
   if(hPage>=tp)hPage=Math.max(0,tp-1);
   document.getElementById('h-count').innerText=total?total+' entries':'No entries match filters';
   const slice=filtered.slice(hPage*PG,(hPage+1)*PG);
@@ -636,11 +734,12 @@ function renderHist(){
       <td><span class="odo-val">${parseFloat(h.odo).toLocaleString()} km</span></td>
       <td class="r">${amt}</td>
       <td class="r col-hide">${lit}</td>
-      <td class="col-hide" style="color:var(--muted)">${h.loggedBy}</td>
+      <td class="col-hide" style="color:var(--muted)">${h.loggedBy||''}</td>
+      <td class="col-hide" style="color:var(--dim);font-size:12px;max-width:140px;overflow:hidden;text-overflow:ellipsis">${h.notes||''}</td>
       <td><button class="epill" onclick="openEdit('${h.logId}')">Edit</button></td>
     </tr>`;
   });
-  document.getElementById('h-tbody').innerHTML=rows||`<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No logs match the current filters.</td></tr>`;
+  document.getElementById('h-tbody').innerHTML=rows||`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted);font-size:13px">No logs match the current filters.</td></tr>`;
   let pg='';
   if(tp>1){
     pg+=`<button class="pbtn" onclick="pgTo(${hPage-1})" ${hPage===0?'disabled':''}>← Prev</button>`;
@@ -654,24 +753,50 @@ function renderHist(){
 }
 function pgTo(p){hPage=p;renderHist();sTop()}
 
-// EDIT
+// CSV EXPORT
+function exportCSV(){
+  const filtered=getSorted(getFiltered());
+  if(!filtered.length)return toast('No data to export.','err');
+  const hdrs=['#','Date','Time','Type','Odometer (km)','Amount (₹)','Liters (L)','Price/L (₹)','Logged By','Notes'];
+  const rows=filtered.map((h,i)=>[
+    i+1,fmtDT(h.date,''),h.time||'',h.logType,h.odo,
+    h.logType==='FUELING'?h.amount:'',h.logType==='FUELING'?h.liters:'',
+    h.logType==='FUELING'?h.price:'',h.loggedBy||'',h.notes||''
+  ]);
+  const csv=[hdrs,...rows].map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  const a=document.createElement('a');a.href=url;a.download=`fuel-log-${new Date().toISOString().slice(0,10)}.csv`;a.click();
+  URL.revokeObjectURL(url);toast(`Exported ${filtered.length} entries.`);
+}
+
+// EDIT + DELETE ENTRY
 function openEdit(id){
   const h=gHist.find(x=>x.logId===id);if(!h)return;
   document.getElementById('m-edit-id').value=id;document.getElementById('m-edit-type').value=h.logType;
   document.getElementById('m-edit-odo').value=h.odo;
+  document.getElementById('m-edit-notes').value=h.notes||'';
   const al=document.getElementById('m-edit-amt-lbl'),af=document.getElementById('m-edit-amt');
   if(h.logType==='FUELING'){af.value=h.amount;af.disabled=false;al.style.display='block';af.style.display='block'}
   else{af.value='';af.disabled=true;al.style.display='none';af.style.display='none'}
   document.getElementById('edit-modal').style.display='flex';
 }
 async function saveEdit(){
-  const id=document.getElementById('m-edit-id').value,o=document.getElementById('m-edit-odo').value,a=document.getElementById('m-edit-amt').value;
-  showL('logging');const r=await api({action:'editEntry',logId:id,odoReading:parseFloat(o),amountPaid:a?parseFloat(a):0});
+  const id=document.getElementById('m-edit-id').value,o=document.getElementById('m-edit-odo').value;
+  const a=document.getElementById('m-edit-amt').value,notes=document.getElementById('m-edit-notes').value.trim();
+  showL('logging');const r=await api({action:'editEntry',logId:id,odoReading:parseFloat(o),amountPaid:a?parseFloat(a):0,notes});
   hideL();closeM('edit-modal');
   if(r.status==='success'){toast('Record updated.');fetchInit()}else toast(r.message,'err');
 }
+async function deleteEntry(){
+  const id=document.getElementById('m-edit-id').value;
+  const h=gHist.find(x=>x.logId===id);
+  const ok=await confirm2('Delete Entry?',`Permanently delete ${h?h.logType:''} at ${h?parseFloat(h.odo).toLocaleString():''} km?`,'Delete',true,'🗑️');
+  if(!ok)return;
+  showL('logging');const r=await api({action:'deleteEntry',logId:id});hideL();closeM('edit-modal');
+  if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
+}
 
-// PRICE
+// PRICE MODAL
 function openPriceModal(){document.getElementById('m-price').value=gPrice.toFixed(2);document.getElementById('price-modal').style.display='flex'}
 async function updatePrice(){
   const np=document.getElementById('m-price').value;if(!np)return;
@@ -680,61 +805,47 @@ async function updatePrice(){
   if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
 }
 
-// ── ISSUE 1: MONTH FILTER HELPERS ───────────────────────────────────────────
-function populateMonthFilter(allVl){
-  const sel=document.getElementById('dash-month');if(!sel)return;
-  const months=new Set();
-  allVl.forEach(h=>{const mk=monthKey(h.date);if(mk)months.add(mk)});
-  const sorted=[...months].sort().reverse();
-  const prev=sel.value;
-  sel.innerHTML='<option value="ALL">All Time</option>'+
-    sorted.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
-  if(sorted.includes(prev))sel.value=prev;
-  else sel.value=dashMonth;
-}
-function onMonthChange(){
-  dashMonth=document.getElementById('dash-month').value;
-  const badge=document.getElementById('dash-period-badge');
-  badge.innerText=dashMonth==='ALL'?'':'— '+monthLabel(dashMonth);
+// DASHBOARD VEHICLE + MONTH FILTERS
+function onDashVehChange(){
+  const v=document.getElementById('dash-veh').value;
+  localStorage.setItem('ft_veh',v);
+  // Also sync entry selector
+  const ev=document.getElementById('ev');if(ev&&gVeh.some(x=>x.id===v))ev.value=v;
   renderDash();
 }
-// Filter a log array by the current dashMonth
-function byMonth(logs){
-  if(dashMonth==='ALL')return logs;
-  return logs.filter(h=>monthKey(h.date)===dashMonth);
+function onMonthChange(){dashMonth=document.getElementById('dash-month').value;renderDash()}
+function populateMonthFilter(allVl){
+  const sel=document.getElementById('dash-month');if(!sel)return;
+  const months=new Set();allVl.forEach(h=>{const mk=monthKey(h.date);if(mk)months.add(mk)});
+  const sorted=[...months].sort().reverse(),prev=sel.value;
+  sel.innerHTML='<option value="ALL">All Time</option>'+sorted.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');
+  if(sorted.includes(prev))sel.value=prev;else sel.value=dashMonth;
 }
+function byMonth(logs){return dashMonth==='ALL'?logs:logs.filter(h=>monthKey(h.date)===dashMonth)}
 
-// ── DASHBOARD ────────────────────────────────────────────────────────────────
+// DASHBOARD RENDER
 function renderDash(){
-  const v=document.getElementById('ev').value;
-  const allVl=gHist.filter(h=>h.vehicleId===v); // full vehicle history
-
-  // Populate month filter from full history
+  const v=document.getElementById('dash-veh').value;
+  const allVl=gHist.filter(h=>h.vehicleId===v);
   populateMonthFilter(allVl);
-
-  // Stats & charts use month-filtered data
-  const vl=byMonth(allVl);
-  const fl=vl.filter(h=>h.logType==='FUELING');
-
+  const vl=byMonth(allVl),fl=vl.filter(h=>h.logType==='FUELING');
   const spent=fl.reduce((s,f)=>s+(parseFloat(f.amount)||0),0);
   const lit=fl.reduce((s,f)=>s+(parseFloat(f.liters)||0),0);
   anim('s-spent',spent,'₹','',true);anim('s-liters',lit,'',' L',false);
   anim('s-logs',vl.length,'','',false);document.getElementById('s-price').innerText='₹'+gPrice.toFixed(2);
-
-  // Mileage hero + maintenance always use FULL history (ODO-based)
-  calcMileage(v,allVl);
-  renderMaint(v,allVl);
-
-  // Efficiency table filtered by month
-  renderMileHist(v,allVl);
-
-  // Charts: mileage segments built from full history then filtered, spend/user from fl
-  renderCharts(v,allVl,fl);
+  // ₹/km stat
+  const allSegs=buildSegs(allVl);
+  const periodSegs=dashMonth==='ALL'?allSegs:allSegs.filter(sg=>monthKey(sg.date)===dashMonth);
+  const totalKm=periodSegs.reduce((s,sg)=>s+sg.dist,0);
+  const cpm=totalKm>0?spent/totalKm:0;
+  document.getElementById('s-cpm').innerText=cpm>0?'₹'+cpm.toFixed(2):'₹--';
+  calcMileage(v,allVl);renderMaint(v,allVl);renderMileHist(v,allVl);
+  lastDashV=v;lastAllVl=allVl;lastFl=fl;
+  renderCharts(v,allVl,fl);renderPriceChart();
 }
-
 function anim(id,target,pre,suf,cur){
   const el=document.getElementById(id);if(!el)return;
-  const s=performance.now(),d=900,tick=now=>{
+  const s=performance.now(),d=800,tick=now=>{
     const t=Math.min((now-s)/d,1),e=1-Math.pow(1-t,3),val=e*target;
     el.innerText=pre+Math.floor(val).toLocaleString('en-IN')+suf;
     if(t<1)requestAnimationFrame(tick);
@@ -742,18 +853,14 @@ function anim(id,target,pre,suf,cur){
   };requestAnimationFrame(tick);
 }
 
-// Mileage hero — always last segment, no month filter
+// MILEAGE HERO
 function calcMileage(v,vl){
   const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
   const km=document.getElementById('dash-km'),sub=document.getElementById('dash-sub');
   if(res.length<2){km.className='';km.innerText='-- km/L';sub.innerText='Need 2+ Reserve logs.';setGauge(0,'#1a1a28');return}
   const end=res[res.length-1],start=res[res.length-2];
   const dist=parseFloat(end.odo)-parseFloat(start.odo);
-  let fuel=0;
-  vl.forEach(h=>{
-    if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(start.odo)&&parseFloat(h.odo)<parseFloat(end.odo))
-      fuel+=parseFloat(h.liters)||0;
-  });
+  let fuel=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(start.odo)&&parseFloat(h.odo)<parseFloat(end.odo))fuel+=parseFloat(h.liters)||0});
   if(fuel>0&&dist>0){
     const k=dist/fuel;km.innerText=k.toFixed(1)+' km/L';
     km.className=k>=45?'good':k>=32?'warn':'poor';
@@ -769,7 +876,7 @@ function setGauge(pct,color){
   document.getElementById('g-pct').innerText=Math.round(pct)+'%';
 }
 
-// Maintenance — uses full history
+// MAINTENANCE
 function renderMaint(v,vl){
   if(!v||!vl.length)return;
   const odo=Math.max(...vl.map(h=>parseFloat(h.odo)||0));
@@ -805,16 +912,12 @@ function mc(lbl,intv,lastOdo,curOdo,v,t,histId){
   <div id="${histId}"><p style="font-size:11px;color:var(--dim);margin-top:8px">Loading history...</p></div></div>`;
 }
 async function fetchSvcHist(v){
-  const r=await api({action:'getServiceHistory',vehicleId:v});
-  if(r.status!=='success')return;
-  injectSvcHist('lube-hist',r.lube,'⛓️');
-  injectSvcHist('oil-hist', r.oil, '🛢️');
+  const r=await api({action:'getServiceHistory',vehicleId:v});if(r.status!=='success')return;
+  injectSvcHist('lube-hist',r.lube,'⛓️');injectSvcHist('oil-hist',r.oil,'🛢️');
 }
 function injectSvcHist(elId,records,icon){
   const el=document.getElementById(elId);if(!el)return;
-  if(!records||!records.length){
-    el.innerHTML='<p style="font-size:11px;color:var(--dim);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">No service history recorded yet.</p>';return;
-  }
+  if(!records||!records.length){el.innerHTML='<p style="font-size:11px;color:var(--dim);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.04)">No service history recorded yet.</p>';return}
   let html='<div class="svc-hist"><div class="svc-hist-title">'+icon+' Service History</div>';
   records.forEach((rec,i)=>{
     const odoStr=rec.odo?rec.odo.toLocaleString()+' km':'Unknown ODO';
@@ -831,22 +934,27 @@ async function markSvc(t,odo,v){
   if(r.status==='success'){toast(r.message);fetchInit()}else toast(r.message,'err');
 }
 
-// EFFICIENCY TIMELINE — filters by month when one is selected
-function renderMileHist(v,allVl){
-  const res=allVl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
-  const area=document.getElementById('mh-area');
-  if(res.length<2){area.innerHTML='<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs to compute segments.</p>';return}
-  // Build ALL segments from full history
-  const allSegs=[];
+// BUILD SEGMENTS HELPER (shared between stats, timeline, charts)
+function buildSegs(vl){
+  const res=vl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
+  const segs=[];
   for(let i=1;i<res.length;i++){
     const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
-    let fuel=0;
-    allVl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))fuel+=parseFloat(h.liters)||0});
-    if(fuel>0&&dist>0)allSegs.push({date:e.date,dist,fuel,eff:dist/fuel});
+    let fuel=0;vl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))fuel+=parseFloat(h.liters)||0});
+    if(fuel>0&&dist>0)segs.push({date:e.date,dist,fuel,eff:dist/fuel});
   }
-  // Filter by month if needed
+  return segs;
+}
+
+// EFFICIENCY TIMELINE
+function renderMileHist(v,allVl){
+  const area=document.getElementById('mh-area');
+  const allSegs=buildSegs(allVl);
   const segs=(dashMonth==='ALL'?allSegs:allSegs.filter(sg=>monthKey(sg.date)===dashMonth)).slice().reverse();
-  if(!segs.length){area.innerHTML=`<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">No segments for ${monthLabel(dashMonth)}.</p>`;return}
+  if(!segs.length){
+    area.innerHTML=allSegs.length?`<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">No segments for ${monthLabel(dashMonth)}.</p>`:'<p style="text-align:center;color:var(--muted);padding:20px 0;font-size:13px">Need 2+ Reserve logs to compute segments.</p>';
+    return;
+  }
   const grd=e=>{
     if(e>=52)return{g:'S', c:'#00eeff',bg:'rgba(0,238,255,.08)',  b:'rgba(0,238,255,.2)'};
     if(e>=45)return{g:'A+',c:'#10b981',bg:'rgba(16,185,129,.08)', b:'rgba(16,185,129,.2)'};
@@ -875,50 +983,73 @@ function renderMileHist(v,allVl){
   </table></div>`;
 }
 
-// ── ISSUE 2 FIX: CHARTS — short labels, segments from full history, month filter ──
+// CHARTS — with target line annotation on mileage chart
 function renderCharts(v,allVl,fl){
   if(!window.ApexCharts)return;
-  const base={chart:{background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:600}},theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,.04)',strokeDashArray:4},tooltip:{theme:'dark'},xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'},rotate:-30,rotateAlways:false,hideOverlappingLabels:true}},yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}}};
-
-  // Build ALL mileage segments from full vehicle history
-  const res=allVl.filter(h=>h.logType==='RESERVE').sort((a,b)=>parseFloat(a.odo)-parseFloat(b.odo));
-  const allSegs=[];
-  for(let i=1;i<res.length;i++){
-    const s=res[i-1],e=res[i],dist=parseFloat(e.odo)-parseFloat(s.odo);
-    let f=0;allVl.forEach(h=>{if(h.logType==='FUELING'&&parseFloat(h.odo)>=parseFloat(s.odo)&&parseFloat(h.odo)<parseFloat(e.odo))f+=parseFloat(h.liters)||0});
-    if(f>0)allSegs.push({date:e.date,dist,fuel:f,eff:dist/f});
-  }
-  // Filter mileage segments by month
+  const base={chart:{background:'transparent',toolbar:{show:false},animations:{enabled:true,easing:'easeinout',speed:600}},theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,.04)',strokeDashArray:4},tooltip:{theme:'dark'},xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'},rotate:-30,hideOverlappingLabels:true}},yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}}};
+  const allSegs=buildSegs(allVl);
   const mSegs=dashMonth==='ALL'?allSegs:allSegs.filter(sg=>monthKey(sg.date)===dashMonth);
-  // SHORT date labels: "28/05" not "28/05/2026"
   const md=mSegs.map(sg=>({x:shortDate(sg.date),y:parseFloat(sg.eff.toFixed(1))}));
+  const target=parseFloat(document.getElementById('mileage-target')?.value)||45;
 
   if(chM)chM.destroy();
   if(!md.length){
     document.getElementById('ch-mileage').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No segments for this period.</p>';
   }else{
-    chM=new ApexCharts(document.getElementById('ch-mileage'),{...base,series:[{name:'km/L',data:md}],chart:{...base.chart,type:'area',height:200},colors:['#00eeff'],fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},stroke:{curve:'smooth',width:2.5},markers:{size:md.length<=12?4:0,colors:['#00eeff'],strokeWidth:0},dataLabels:{enabled:false}});chM.render();
+    chM=new ApexCharts(document.getElementById('ch-mileage'),{...base,
+      series:[{name:'km/L',data:md}],
+      chart:{...base.chart,type:'area',height:200},
+      colors:['#00eeff'],
+      fill:{type:'gradient',gradient:{shadeIntensity:1,opacityFrom:.35,opacityTo:.02}},
+      stroke:{curve:'smooth',width:2.5},
+      markers:{size:md.length<=12?4:0,colors:['#00eeff'],strokeWidth:0},
+      dataLabels:{enabled:false},
+      annotations:{yaxis:[{y:target,borderColor:'#f59e0b',borderWidth:2,strokeDashArray:4,label:{text:'Target: '+target,style:{color:'#f59e0b',background:'transparent',fontSize:'11px',fontWeight:700},offsetY:-4}}]}
+    });chM.render();
   }
 
-  // Spend chart — monthly grouping from fl (already filtered by month)
-  const sm={};
-  fl.forEach(h=>{const p=h.date.split('-');if(p.length===3){const k=`${p[1]}/${p[2].slice(-2)}`,sk=`${p[2]}${p[1]}`;if(!sm[k])sm[k]={v:0,s:sk};sm[k].v+=parseFloat(h.amount)||0}});
+  // Spend chart
+  const sm={};fl.forEach(h=>{const p=h.date.split('-');if(p.length===3){const k=`${p[1]}/${p[2].slice(-2)}`,sk=`${p[2]}${p[1]}`;if(!sm[k])sm[k]={v:0,s:sk};sm[k].v+=parseFloat(h.amount)||0}});
   const sorted=Object.entries(sm).sort((a,b)=>a[1].s.localeCompare(b[1].s));
   if(chS)chS.destroy();
-  if(!sorted.length){
-    document.getElementById('ch-spend').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No spend data for this period.</p>';
-  }else{
-    chS=new ApexCharts(document.getElementById('ch-spend'),{...base,colors:['#10b981'],series:[{name:'₹ Spend',data:sorted.map(([,v])=>parseFloat(v.v.toFixed(2)))}],chart:{...base.chart,type:'bar',height:200},plotOptions:{bar:{borderRadius:5,columnWidth:'55%'}},dataLabels:{enabled:false},xaxis:{...base.xaxis,categories:sorted.map(([k])=>k)}});chS.render();
-  }
+  if(!sorted.length){document.getElementById('ch-spend').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No spend data.</p>'}
+  else{chS=new ApexCharts(document.getElementById('ch-spend'),{...base,colors:['#10b981'],series:[{name:'₹ Spend',data:sorted.map(([,v])=>parseFloat(v.v.toFixed(2)))}],chart:{...base.chart,type:'bar',height:200},plotOptions:{bar:{borderRadius:5,columnWidth:'55%'}},dataLabels:{enabled:false},xaxis:{...base.xaxis,categories:sorted.map(([k])=>k)}});chS.render()}
 
-  // User donut — from fl (month-filtered)
+  // User donut
   const um={};fl.forEach(h=>{if(!um[h.loggedBy])um[h.loggedBy]=0;um[h.loggedBy]+=parseFloat(h.amount)||0});
   if(chU)chU.destroy();
-  if(!Object.keys(um).length){
-    document.getElementById('ch-user').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No data for this period.</p>';
-  }else{
-    chU=new ApexCharts(document.getElementById('ch-user'),{...base,colors:['#00eeff','#10b981','#f59e0b','#a855f7','#ef4444'],series:Object.values(um).map(v=>parseFloat(v.toFixed(2))),labels:Object.keys(um),chart:{...base.chart,type:'donut',height:220},stroke:{colors:['#09090b'],width:2},plotOptions:{pie:{donut:{size:'68%',labels:{show:true,total:{show:true,label:'Total',color:'#8b8b99',fontSize:'11px',formatter:w=>'₹'+w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString('en-IN',{maximumFractionDigits:0})}}}}},dataLabels:{enabled:false},legend:{position:'bottom',labels:{colors:'#8b8b99'},fontSize:'11px'}});chU.render();
+  if(!Object.keys(um).length){document.getElementById('ch-user').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No data.</p>'}
+  else{chU=new ApexCharts(document.getElementById('ch-user'),{...base,colors:['#00eeff','#10b981','#f59e0b','#a855f7','#ef4444'],series:Object.values(um).map(v=>parseFloat(v.toFixed(2))),labels:Object.keys(um),chart:{...base.chart,type:'donut',height:220},stroke:{colors:['#09090b'],width:2},plotOptions:{pie:{donut:{size:'68%',labels:{show:true,total:{show:true,label:'Total',color:'#8b8b99',fontSize:'11px',formatter:w=>'₹'+w.globals.seriesTotals.reduce((a,b)=>a+b,0).toLocaleString('en-IN',{maximumFractionDigits:0})}}}}},dataLabels:{enabled:false},legend:{position:'bottom',labels:{colors:'#8b8b99'},fontSize:'11px'}});chU.render()}
+}
+
+// FUEL PRICE HISTORY CHART
+function renderPriceChart(){
+  if(!window.ApexCharts||!gPriceHist||!gPriceHist.length){
+    document.getElementById('ch-price').innerHTML='<p style="padding:28px;text-align:center;color:var(--muted);font-size:13px">No price update history recorded yet.</p>';return;
   }
+  const sorted=[...gPriceHist].sort((a,b)=>new Date(a.timestamp)-new Date(b.timestamp));
+  const pts=sorted.map(p=>{
+    let lbl='';
+    try{const d=new Date(p.timestamp);lbl=`${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}`}catch(e){}
+    return{x:lbl,y:p.to};
+  });
+  // Add current price as final point if different from last
+  if(pts.length&&pts[pts.length-1].y!==gPrice){
+    const today=new Date();
+    pts.push({x:`${String(today.getDate()).padStart(2,'0')}/${String(today.getMonth()+1).padStart(2,'0')}`,y:gPrice});
+  }
+  if(chP)chP.destroy();
+  chP=new ApexCharts(document.getElementById('ch-price'),{
+    chart:{background:'transparent',toolbar:{show:false},type:'line',height:180,animations:{enabled:true,speed:600}},
+    theme:{mode:'dark'},grid:{borderColor:'rgba(255,255,255,.04)',strokeDashArray:4},
+    tooltip:{theme:'dark'},
+    series:[{name:'₹/L',data:pts}],
+    colors:['#a855f7'],stroke:{curve:'stepline',width:2.5},
+    markers:{size:5,colors:['#a855f7'],strokeWidth:0},
+    dataLabels:{enabled:true,style:{fontSize:'11px',fontWeight:700,colors:['#a855f7']},background:{enabled:false},offsetY:-6,formatter:v=>'₹'+v},
+    xaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'}}},
+    yaxis:{labels:{style:{colors:'#44445a',fontSize:'11px'},formatter:v=>'₹'+v},min:d=>d.min-2}
+  });chP.render();
 }
 
 // ADMIN USERS
